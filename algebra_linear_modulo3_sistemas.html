@@ -1,0 +1,665 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>M3 — Sistemas Lineares | LinearTeach</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+</head>
+<body>
+
+<h2 class="sr-only">Módulo 3: Sistemas Lineares — visualização geométrica de sistemas de equações como interseção de planos em R³</h2>
+
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  html, body {
+    height: 100%;
+    overflow: hidden;
+    background: #0A0A0F;
+  }
+
+  .sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+  }
+
+  #m3-root {
+    font-family: 'Space Grotesk', sans-serif;
+    background: #0A0A0F;
+    color: #E8EDF2;
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+    width: 100vw;
+    overflow: hidden;
+  }
+
+  #m3-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 16px;
+    background: #0F0F1A;
+    border-bottom: 0.5px solid #1E3A5F;
+    flex-shrink: 0;
+  }
+
+  .m3-badge {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    background: #38BDF822;
+    border: 0.5px solid #38BDF866;
+    color: #38BDF8;
+    padding: 3px 8px;
+    border-radius: 4px;
+    letter-spacing: 0.05em;
+  }
+
+  #m3-header h1 { font-size: 14px; font-weight: 500; color: #E8EDF2; flex: 1; }
+
+  .lt-header-nav { display: flex; gap: 8px; flex-shrink: 0; }
+
+  .lt-nav-link {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    color: #4A7FA5;
+    text-decoration: none;
+    padding: 4px 8px;
+    border: 0.5px solid #1E3A5F;
+    border-radius: 4px;
+    transition: color 0.15s, border-color 0.15s;
+    white-space: nowrap;
+  }
+
+  .lt-nav-link:hover { color: #38BDF8; border-color: #38BDF855; }
+
+  #m3-body { display: flex; flex: 1; min-height: 0; }
+  #m3-canvas-wrap { flex: 1; position: relative; min-width: 0; }
+  #m3-canvas { width: 100%; height: 100%; display: block; }
+
+  #m3-panel {
+    width: 230px;
+    flex-shrink: 0;
+    background: #0F0F1A;
+    border-left: 0.5px solid #1E3A5F;
+    display: flex;
+    flex-direction: column;
+    overflow-y: auto;
+  }
+
+  .m3-section { padding: 10px 14px; border-bottom: 0.5px solid #1E2A3A; }
+
+  .m3-section-title {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    color: #4A7FA5;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    margin-bottom: 8px;
+  }
+
+  .m3-eq-row {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    margin-bottom: 7px;
+  }
+
+  .m3-eq-dot {
+    width: 7px; height: 7px;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+
+  .m3-eq-inputs {
+    display: flex;
+    gap: 3px;
+    flex: 1;
+    align-items: center;
+  }
+
+  .m3-coef {
+    width: 34px;
+    background: #0A0A0F;
+    border: 0.5px solid #1E3A5F;
+    color: #E8EDF2;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    padding: 4px 3px;
+    border-radius: 4px;
+    text-align: center;
+  }
+
+  .m3-coef:focus { outline: none; border-color: #38BDF8; }
+
+  .m3-eq-sep {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    color: #2A5A7A;
+  }
+
+  .m3-rhs {
+    width: 34px;
+    background: #0A0A0F;
+    border: 0.5px solid #2A5A3A;
+    color: #34D399;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    padding: 4px 3px;
+    border-radius: 4px;
+    text-align: center;
+  }
+
+  .m3-rhs:focus { outline: none; border-color: #34D399; }
+
+  .m3-cases {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 4px;
+  }
+
+  .m3-case-btn {
+    background: transparent;
+    border: 0.5px solid #1E3A5F;
+    color: #8A9AB0;
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 10px;
+    padding: 6px 4px;
+    border-radius: 5px;
+    cursor: pointer;
+    text-align: center;
+    transition: background 0.15s;
+    line-height: 1.3;
+  }
+
+  .m3-case-btn:hover { background: #1E3A5F33; color: #C8D8E8; }
+  .m3-case-btn.active { border-color: #38BDF8; color: #38BDF8; background: #38BDF812; }
+
+  .m3-status-box {
+    padding: 8px 10px;
+    border-radius: 6px;
+    border: 0.5px solid;
+    font-size: 12px;
+    font-weight: 500;
+    text-align: center;
+    margin-bottom: 6px;
+  }
+
+  .m3-status-unique { background: #34D39912; border-color: #34D39944; color: #34D399; }
+  .m3-status-infinite { background: #38BDF812; border-color: #38BDF844; color: #38BDF8; }
+  .m3-status-none { background: #F8717112; border-color: #F8717144; color: #F87171; }
+  .m3-status-unknown { background: #1E3A5F22; border-color: #1E3A5F; color: #4A7FA5; }
+
+  .m3-sol-val {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    color: #34D399;
+    text-align: center;
+    margin-bottom: 4px;
+  }
+
+  .m3-stat { display: flex; justify-content: space-between; margin-bottom: 5px; }
+  .m3-stat-label { font-size: 11px; color: #4A7FA5; }
+  .m3-stat-val { font-family: 'JetBrains Mono', monospace; font-size: 11px; color: #E8EDF2; }
+
+  .m3-insight {
+    margin: 8px 14px;
+    padding: 10px 12px;
+    background: #38BDF812;
+    border-left: 2px solid #38BDF8;
+    border-radius: 0 6px 6px 0;
+  }
+
+  .m3-insight-label { font-size: 10px; font-weight: 500; color: #38BDF8; letter-spacing: 0.05em; margin-bottom: 4px; }
+  .m3-insight p { font-size: 12px; color: #8A9AB0; line-height: 1.5; }
+
+  .m3-legend { display: flex; flex-direction: column; gap: 4px; }
+  .m3-legend-row { display: flex; align-items: center; gap: 7px; font-size: 11px; color: #8A9AB0; }
+  .m3-legend-swatch { width: 20px; height: 8px; border-radius: 2px; flex-shrink: 0; opacity: 0.7; }
+
+  .m3-hint { font-size: 10px; color: #2A4A6A; text-align: center; padding: 8px; flex-shrink: 0; }
+</style>
+
+<div id="m3-root">
+  <div id="m3-header">
+    <span class="m3-badge">M3</span>
+    <h1>Sistemas Lineares</h1>
+    <nav class="lt-header-nav">
+      <a class="lt-nav-link" href="index.html">← início</a>
+    </nav>
+  </div>
+  <div id="m3-body">
+    <div id="m3-canvas-wrap">
+      <canvas id="m3-canvas"></canvas>
+    </div>
+    <div id="m3-panel">
+
+      <div class="m3-section">
+        <div class="m3-section-title">Sistema (ax + by + cz = d)</div>
+        <div class="m3-eq-row">
+          <div class="m3-eq-dot" style="background:#F5A623"></div>
+          <div class="m3-eq-inputs">
+            <input class="m3-coef" data-eq="0" data-col="0" type="number" value="1" step="0.5">
+            <input class="m3-coef" data-eq="0" data-col="1" type="number" value="0" step="0.5">
+            <input class="m3-coef" data-eq="0" data-col="2" type="number" value="0" step="0.5">
+            <span class="m3-eq-sep">=</span>
+            <input class="m3-rhs" data-eq="0" type="number" value="1" step="0.5">
+          </div>
+        </div>
+        <div class="m3-eq-row">
+          <div class="m3-eq-dot" style="background:#38BDF8"></div>
+          <div class="m3-eq-inputs">
+            <input class="m3-coef" data-eq="1" data-col="0" type="number" value="0" step="0.5">
+            <input class="m3-coef" data-eq="1" data-col="1" type="number" value="1" step="0.5">
+            <input class="m3-coef" data-eq="1" data-col="2" type="number" value="0" step="0.5">
+            <span class="m3-eq-sep">=</span>
+            <input class="m3-rhs" data-eq="1" type="number" value="1" step="0.5">
+          </div>
+        </div>
+        <div class="m3-eq-row">
+          <div class="m3-eq-dot" style="background:#A78BFA"></div>
+          <div class="m3-eq-inputs">
+            <input class="m3-coef" data-eq="2" data-col="0" type="number" value="0" step="0.5">
+            <input class="m3-coef" data-eq="2" data-col="1" type="number" value="0" step="0.5">
+            <input class="m3-coef" data-eq="2" data-col="2" type="number" value="1" step="0.5">
+            <span class="m3-eq-sep">=</span>
+            <input class="m3-rhs" data-eq="2" type="number" value="1" step="0.5">
+          </div>
+        </div>
+      </div>
+
+      <div class="m3-section">
+        <div class="m3-section-title">Casos Geométricos</div>
+        <div class="m3-cases">
+          <button class="m3-case-btn active" data-case="unique">solução<br>única</button>
+          <button class="m3-case-btn" data-case="infinite">∞ soluções<br>(reta)</button>
+          <button class="m3-case-btn" data-case="none">sem<br>solução</button>
+        </div>
+      </div>
+
+      <div class="m3-section">
+        <div class="m3-section-title">Solução</div>
+        <div class="m3-status-box m3-status-unique" id="m3-status">solução única</div>
+        <div class="m3-sol-val" id="m3-sol-coords">( 1.00, 1.00, 1.00 )</div>
+      </div>
+
+      <div class="m3-section">
+        <div class="m3-section-title">Propriedades</div>
+        <div class="m3-stat"><span class="m3-stat-label">det(A)</span><span class="m3-stat-val" id="m3-det">1.00</span></div>
+        <div class="m3-stat"><span class="m3-stat-label">rank(A)</span><span class="m3-stat-val" id="m3-rank">3</span></div>
+        <div class="m3-stat"><span class="m3-stat-label">rank(A|b)</span><span class="m3-stat-val" id="m3-rank-aug">3</span></div>
+      </div>
+
+      <div class="m3-section">
+        <div class="m3-section-title">Legenda</div>
+        <div class="m3-legend">
+          <div class="m3-legend-row"><div class="m3-legend-swatch" style="background:#F5A623"></div>plano π₁</div>
+          <div class="m3-legend-row"><div class="m3-legend-swatch" style="background:#38BDF8"></div>plano π₂</div>
+          <div class="m3-legend-row"><div class="m3-legend-swatch" style="background:#A78BFA"></div>plano π₃</div>
+          <div class="m3-legend-row"><div class="m3-legend-swatch" style="background:#34D399"></div>solução</div>
+        </div>
+      </div>
+
+      <div class="m3-insight">
+        <div class="m3-insight-label">💡 insight</div>
+        <p id="m3-insight">Os três planos se cruzam em exatamente um ponto — a solução única do sistema. Mova os coeficientes e veja a geometria mudar.</p>
+      </div>
+
+      <div class="m3-hint">arraste para orbitar · scroll para zoom</div>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script>
+(function() {
+  const canvas = document.getElementById('m3-canvas');
+  const wrap = document.getElementById('m3-canvas-wrap');
+  const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: false });
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+  renderer.setClearColor(0x0A0A0F, 1);
+
+  const scene = new THREE.Scene();
+  const camera = new THREE.PerspectiveCamera(45, 1, 0.1, 200);
+  let sph = { theta: 0.6, phi: 0.85, r: 10 };
+
+  function updateCam() {
+    camera.position.set(
+      sph.r * Math.sin(sph.phi) * Math.sin(sph.theta),
+      sph.r * Math.cos(sph.phi),
+      sph.r * Math.sin(sph.phi) * Math.cos(sph.theta)
+    );
+    camera.lookAt(0, 0, 0);
+  }
+  updateCam();
+
+  function resize() {
+    const w = wrap.clientWidth, h = wrap.clientHeight;
+    renderer.setSize(w, h, false);
+    camera.aspect = w / h;
+    camera.updateProjectionMatrix();
+  }
+  resize();
+
+  let drag = false, lx = 0, ly = 0;
+  canvas.addEventListener('mousedown', e => { drag = true; lx = e.clientX; ly = e.clientY; });
+  window.addEventListener('mouseup', () => drag = false);
+  window.addEventListener('mousemove', e => {
+    if (!drag) return;
+    sph.theta -= (e.clientX - lx) * 0.008;
+    sph.phi = Math.max(0.08, Math.min(Math.PI - 0.08, sph.phi + (e.clientY - ly) * 0.008));
+    lx = e.clientX; ly = e.clientY; updateCam();
+  });
+  canvas.addEventListener('wheel', e => {
+    sph.r = Math.max(4, Math.min(22, sph.r + e.deltaY * 0.012));
+    updateCam(); e.preventDefault();
+  }, { passive: false });
+  let lt = null;
+  canvas.addEventListener('touchstart', e => { lt = e.touches[0]; e.preventDefault(); }, { passive: false });
+  canvas.addEventListener('touchmove', e => {
+    if (!lt) return;
+    const t = e.touches[0];
+    sph.theta -= (t.clientX - lt.clientX) * 0.008;
+    sph.phi = Math.max(0.08, Math.min(Math.PI - 0.08, sph.phi + (t.clientY - lt.clientY) * 0.008));
+    lt = t; updateCam(); e.preventDefault();
+  }, { passive: false });
+
+  // --- state ---
+  let A = [[1,0,0],[0,1,0],[0,0,1]];
+  let b = [1, 1, 1];
+
+  const PLANE_COLORS = [0xF5A623, 0x38BDF8, 0xA78BFA];
+  const PLANE_SIZE = 3.5;
+
+  // --- math helpers ---
+  function det3(m) {
+    return m[0][0]*(m[1][1]*m[2][2]-m[1][2]*m[2][1])
+          -m[0][1]*(m[1][0]*m[2][2]-m[1][2]*m[2][0])
+          +m[0][2]*(m[1][0]*m[2][1]-m[1][1]*m[2][0]);
+  }
+
+  function gaussRank(mat) {
+    const m = mat.map(r => [...r]);
+    const rows = m.length, cols = m[0].length;
+    let rank = 0, row = 0;
+    for (let col = 0; col < cols && row < rows; col++) {
+      let pivot = -1;
+      for (let i = row; i < rows; i++) if (Math.abs(m[i][col]) > 1e-9) { pivot = i; break; }
+      if (pivot < 0) continue;
+      [m[row], m[pivot]] = [m[pivot], m[row]];
+      const sc = m[row][col];
+      for (let j = col; j < cols; j++) m[row][j] /= sc;
+      for (let i = 0; i < rows; i++) if (i !== row) {
+        const f = m[i][col];
+        for (let j = col; j < cols; j++) m[i][j] -= f * m[row][j];
+      }
+      rank++; row++;
+    }
+    return rank;
+  }
+
+  function solveCramer(A, b) {
+    const d = det3(A);
+    if (Math.abs(d) < 1e-9) return null;
+    const dx = det3([[b[0],A[0][1],A[0][2]],[b[1],A[1][1],A[1][2]],[b[2],A[2][1],A[2][2]]]);
+    const dy = det3([[A[0][0],b[0],A[0][2]],[A[1][0],b[1],A[1][2]],[A[2][0],b[2],A[2][2]]]);
+    const dz = det3([[A[0][0],A[0][1],b[0]],[A[1][0],A[1][1],b[1]],[A[2][0],A[2][1],b[2]]]);
+    return [dx/d, dy/d, dz/d];
+  }
+
+  // Build a plane mesh given normal (a,b,c) and offset d: ax+by+cz=d
+  function makePlaneMesh(a, bc, c, d, color) {
+    const normal = new THREE.Vector3(a, bc, c);
+    const len = normal.length();
+    if (len < 1e-9) return null;
+    normal.normalize();
+
+    // center on plane
+    const center = normal.clone().multiplyScalar(d / (len * len) * len);
+
+    // build local axes on plane
+    let up = new THREE.Vector3(0, 1, 0);
+    if (Math.abs(normal.dot(up)) > 0.9) up = new THREE.Vector3(1, 0, 0);
+    const t1 = new THREE.Vector3().crossVectors(normal, up).normalize();
+    const t2 = new THREE.Vector3().crossVectors(normal, t1).normalize();
+
+    const S = PLANE_SIZE;
+    const corners = [
+      center.clone().addScaledVector(t1, -S).addScaledVector(t2, -S),
+      center.clone().addScaledVector(t1,  S).addScaledVector(t2, -S),
+      center.clone().addScaledVector(t1,  S).addScaledVector(t2,  S),
+      center.clone().addScaledVector(t1, -S).addScaledVector(t2,  S),
+    ];
+
+    const verts = new Float32Array([
+      corners[0].x, corners[0].y, corners[0].z,
+      corners[1].x, corners[1].y, corners[1].z,
+      corners[2].x, corners[2].y, corners[2].z,
+      corners[0].x, corners[0].y, corners[0].z,
+      corners[2].x, corners[2].y, corners[2].z,
+      corners[3].x, corners[3].y, corners[3].z,
+    ]);
+
+    const geo = new THREE.BufferGeometry();
+    geo.setAttribute('position', new THREE.BufferAttribute(verts, 3));
+    const mat = new THREE.MeshBasicMaterial({
+      color, side: THREE.DoubleSide, transparent: true, opacity: 0.28, depthWrite: false
+    });
+    const mesh = new THREE.Mesh(geo, mat);
+
+    // edge outline
+    const edgePts = [...corners, corners[0]];
+    const ePts = [];
+    edgePts.forEach(p => ePts.push(p.x, p.y, p.z));
+    const eGeo = new THREE.BufferGeometry();
+    eGeo.setAttribute('position', new THREE.Float32BufferAttribute(ePts, 3));
+    const eLine = new THREE.Line(eGeo, new THREE.LineBasicMaterial({ color, transparent: true, opacity: 0.7 }));
+
+    const g = new THREE.Group();
+    g.add(mesh);
+    g.add(eLine);
+    return g;
+  }
+
+  function makeSphere(pos, color, r = 0.15) {
+    const m = new THREE.Mesh(
+      new THREE.SphereGeometry(r, 12, 12),
+      new THREE.MeshBasicMaterial({ color })
+    );
+    m.position.set(...pos);
+    return m;
+  }
+
+  function makeLineSeg(a, b, color) {
+    const geo = new THREE.BufferGeometry();
+    geo.setAttribute('position', new THREE.Float32BufferAttribute([a[0],a[1],a[2],b[0],b[1],b[2]], 3));
+    return new THREE.Line(geo, new THREE.LineBasicMaterial({ color, transparent: true, opacity: 0.85 }));
+  }
+
+  // axes
+  function addAxes() {
+    [[1,0,0,0xEF4444],[0,1,0,0x22C55E],[0,0,1,0x3B82F6]].forEach(([x,y,z,c]) => {
+      const g = new THREE.BufferGeometry();
+      g.setAttribute('position', new THREE.Float32BufferAttribute([0,0,0,x*4.5,y*4.5,z*4.5], 3));
+      scene.add(new THREE.Line(g, new THREE.LineBasicMaterial({ color: c, transparent: true, opacity: 0.4 })));
+    });
+  }
+  addAxes();
+
+  // grid
+  function addGrid() {
+    const pts = [];
+    for (let i = -4; i <= 4; i++) {
+      pts.push(-4,0,i, 4,0,i);
+      pts.push(i,0,-4, i,0,4);
+    }
+    const g = new THREE.BufferGeometry();
+    g.setAttribute('position', new THREE.Float32BufferAttribute(pts, 3));
+    scene.add(new THREE.LineSegments(g, new THREE.LineBasicMaterial({ color: 0x1A2A3A, transparent: true, opacity: 0.5 })));
+  }
+  addGrid();
+
+  let dynamicGroup = new THREE.Group();
+  scene.add(dynamicGroup);
+
+  function inferIntersectionLine() {
+    // two-plane intersection of plane 0 and 1
+    const n1 = new THREE.Vector3(A[0][0], A[0][1], A[0][2]);
+    const n2 = new THREE.Vector3(A[1][0], A[1][1], A[1][2]);
+    const dir = new THREE.Vector3().crossVectors(n1, n2);
+    if (dir.length() < 1e-9) return null;
+    dir.normalize();
+
+    // find a point on both planes
+    const d1 = b[0], d2 = b[1];
+    // solve 2x2 in xz (or pick best pivot)
+    let pt = null;
+    const [a0,b0,c0] = [A[0][0], A[0][1], A[0][2]];
+    const [a1,b1,c1] = [A[1][0], A[1][1], A[1][2]];
+    const combos = [[0,1],[0,2],[1,2]];
+    for (const [i, j] of combos) {
+      const cols = [[a0,a1],[b0,b1],[c0,c1]];
+      const ci = cols[i], cj = cols[j];
+      const det = ci[0]*cj[1] - ci[1]*cj[0];
+      if (Math.abs(det) < 1e-9) continue;
+      const xi = (d1*cj[1] - d2*cj[0]) / det;
+      const xj = (ci[0]*d2 - ci[1]*d1) / det;
+      const p = [0,0,0];
+      p[i] = xi; p[j] = xj;
+      pt = new THREE.Vector3(...p);
+      break;
+    }
+    if (!pt) return null;
+    return { pt, dir };
+  }
+
+  function rebuildScene() {
+    while (dynamicGroup.children.length) dynamicGroup.remove(dynamicGroup.children[0]);
+
+    for (let i = 0; i < 3; i++) {
+      const pl = makePlaneMesh(A[i][0], A[i][1], A[i][2], b[i], PLANE_COLORS[i]);
+      if (pl) dynamicGroup.add(pl);
+    }
+
+    const d = det3(A);
+    const rankA = gaussRank(A.map((r,i) => [...r]));
+    const augmented = A.map((r,i) => [...r, b[i]]);
+    const rankAug = gaussRank(augmented);
+    const sol = solveCramer(A, b);
+
+    document.getElementById('m3-det').textContent = d.toFixed(2);
+    document.getElementById('m3-rank').textContent = rankA;
+    document.getElementById('m3-rank-aug').textContent = rankAug;
+
+    const statusEl = document.getElementById('m3-status');
+    const solEl = document.getElementById('m3-sol-coords');
+    const insightEl = document.getElementById('m3-insight');
+
+    if (rankA === 3 && sol) {
+      statusEl.className = 'm3-status-box m3-status-unique';
+      statusEl.textContent = 'solução única';
+      solEl.textContent = `( ${sol[0].toFixed(2)}, ${sol[1].toFixed(2)}, ${sol[2].toFixed(2)} )`;
+      dynamicGroup.add(makeSphere(sol, 0x34D399, 0.18));
+      // glow ring
+      const ring = new THREE.Mesh(
+        new THREE.SphereGeometry(0.32, 16, 16),
+        new THREE.MeshBasicMaterial({ color: 0x34D399, transparent: true, opacity: 0.12, depthWrite: false })
+      );
+      ring.position.set(...sol);
+      dynamicGroup.add(ring);
+      insightEl.textContent = 'Os três planos se encontram em exatamente um ponto — a solução única. rank(A) = rank(A|b) = 3.';
+    } else if (rankA === rankAug && rankA < 3) {
+      statusEl.className = 'm3-status-box m3-status-infinite';
+      statusEl.textContent = '∞ soluções';
+      solEl.textContent = rankA === 2 ? 'interseção: reta' : 'interseção: plano';
+      if (rankA === 2) {
+        const line = inferIntersectionLine();
+        if (line) {
+          const { pt, dir } = line;
+          const p1 = pt.clone().addScaledVector(dir, -4);
+          const p2 = pt.clone().addScaledVector(dir,  4);
+          dynamicGroup.add(makeLineSeg([p1.x,p1.y,p1.z], [p2.x,p2.y,p2.z], 0x34D399));
+          [-3,-1.5,0,1.5,3].forEach(t => {
+            const p = pt.clone().addScaledVector(dir, t);
+            dynamicGroup.add(makeSphere([p.x,p.y,p.z], 0x34D399, 0.08));
+          });
+        }
+        insightEl.textContent = 'Os planos se intersectam em uma reta — infinitas soluções. rank(A) = rank(A|b) = 2, mas o sistema tem 3 incógnitas.';
+      } else {
+        insightEl.textContent = 'Os três planos são coincidentes — infinitas soluções formando um plano inteiro.';
+      }
+    } else {
+      statusEl.className = 'm3-status-box m3-status-none';
+      statusEl.textContent = 'sem solução';
+      solEl.textContent = '∅ (sistema inconsistente)';
+      insightEl.textContent = 'Os planos não têm ponto em comum. rank(A) < rank(A|b) — o sistema é inconsistente.';
+    }
+  }
+
+  // read inputs
+  function readInputs() {
+    document.querySelectorAll('.m3-coef').forEach(inp => {
+      A[+inp.dataset.eq][+inp.dataset.col] = parseFloat(inp.value) || 0;
+    });
+    document.querySelectorAll('.m3-rhs').forEach(inp => {
+      b[+inp.dataset.eq] = parseFloat(inp.value) || 0;
+    });
+  }
+
+  function writeInputs(newA, newB) {
+    document.querySelectorAll('.m3-coef').forEach(inp => {
+      inp.value = newA[+inp.dataset.eq][+inp.dataset.col];
+    });
+    document.querySelectorAll('.m3-rhs').forEach(inp => {
+      inp.value = newB[+inp.dataset.eq];
+    });
+    A = newA.map(r => [...r]);
+    b = [...newB];
+  }
+
+  const CASES = {
+    unique:   { A: [[1,0,0],[0,1,0],[0,0,1]], b: [1,1,1] },
+    infinite: { A: [[1,1,0],[0,1,-1],[1,2,-1]], b: [2,1,3] },
+    none:     { A: [[1,0,0],[1,0,0],[0,1,0]], b: [1,2,0] },
+  };
+
+  document.querySelectorAll('.m3-case-btn').forEach(btn => {
+    btn.addEventListener('click', function() {
+      const c = CASES[this.dataset.case];
+      writeInputs(c.A, c.b);
+      rebuildScene();
+      document.querySelectorAll('.m3-case-btn').forEach(b2 => b2.classList.remove('active'));
+      this.classList.add('active');
+    });
+  });
+
+  document.querySelectorAll('.m3-coef, .m3-rhs').forEach(inp => {
+    inp.addEventListener('input', () => {
+      readInputs();
+      rebuildScene();
+      document.querySelectorAll('.m3-case-btn').forEach(b2 => b2.classList.remove('active'));
+    });
+  });
+
+  rebuildScene();
+
+  function animate() {
+    requestAnimationFrame(animate);
+    resize();
+    renderer.render(scene, camera);
+  }
+  animate();
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,648 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>M2 — Transformações Lineares | LinearTeach</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+</head>
+<body>
+
+<h2 class="sr-only">Módulo 2: Transformações Lineares — visualização interativa de como matrizes 3×3 deformam o espaço em R³</h2>
+
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  html, body {
+    height: 100%;
+    overflow: hidden;
+    background: #0A0A0F;
+  }
+
+  .sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+  }
+
+  #m2-root {
+    font-family: 'Space Grotesk', sans-serif;
+    background: #0A0A0F;
+    color: #E8EDF2;
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+    width: 100vw;
+    overflow: hidden;
+  }
+
+  #m2-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 16px;
+    background: #0F0F1A;
+    border-bottom: 0.5px solid #1E3A5F;
+    flex-shrink: 0;
+  }
+
+  .m2-badge {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    background: #F5A62322;
+    border: 0.5px solid #F5A62366;
+    color: #F5A623;
+    padding: 3px 8px;
+    border-radius: 4px;
+    letter-spacing: 0.05em;
+  }
+
+  #m2-header h1 { font-size: 14px; font-weight: 500; color: #E8EDF2; flex: 1; }
+
+  .lt-header-nav { display: flex; gap: 8px; flex-shrink: 0; }
+
+  .lt-nav-link {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    color: #4A7FA5;
+    text-decoration: none;
+    padding: 4px 8px;
+    border: 0.5px solid #1E3A5F;
+    border-radius: 4px;
+    transition: color 0.15s, border-color 0.15s;
+    white-space: nowrap;
+  }
+
+  .lt-nav-link:hover { color: #F5A623; border-color: #F5A62355; }
+
+  #m2-body { display: flex; flex: 1; min-height: 0; }
+
+  #m2-canvas-wrap { flex: 1; position: relative; min-width: 0; }
+  #m2-canvas { width: 100%; height: 100%; display: block; }
+
+  #m2-panel {
+    width: 230px;
+    flex-shrink: 0;
+    background: #0F0F1A;
+    border-left: 0.5px solid #1E3A5F;
+    display: flex;
+    flex-direction: column;
+    overflow-y: auto;
+  }
+
+  .m2-section {
+    padding: 10px 14px;
+    border-bottom: 0.5px solid #1E2A3A;
+  }
+
+  .m2-section-title {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    color: #4A7FA5;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    margin-bottom: 8px;
+  }
+
+  .m2-matrix {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 4px;
+    margin-bottom: 8px;
+  }
+
+  .m2-cell {
+    background: #0A0A0F;
+    border: 0.5px solid #1E3A5F;
+    color: #E8EDF2;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 13px;
+    padding: 5px 4px;
+    border-radius: 4px;
+    text-align: center;
+    width: 100%;
+  }
+
+  .m2-cell:focus { outline: none; border-color: #F5A623; }
+
+  .m2-cell.col0 { border-top-color: #F5A62355; }
+  .m2-cell.col1 { border-top-color: #38BDF855; }
+  .m2-cell.col2 { border-top-color: #34D39955; }
+
+  .m2-col-labels {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 4px;
+    margin-bottom: 2px;
+  }
+
+  .m2-col-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9px;
+    text-align: center;
+    letter-spacing: 0.05em;
+  }
+
+  .m2-presets {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 4px;
+  }
+
+  .m2-preset-btn {
+    background: transparent;
+    border: 0.5px solid #1E3A5F;
+    color: #8A9AB0;
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 10px;
+    padding: 5px 6px;
+    border-radius: 5px;
+    cursor: pointer;
+    text-align: center;
+    transition: background 0.15s, border-color 0.15s;
+  }
+
+  .m2-preset-btn:hover { background: #1E3A5F33; border-color: #2A5A8A; color: #C8D8E8; }
+  .m2-preset-btn.active { border-color: #F5A623; color: #F5A623; background: #F5A62312; }
+
+  .m2-animate-btn {
+    width: 100%;
+    background: #F5A62318;
+    border: 0.5px solid #F5A62355;
+    color: #F5A623;
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 12px;
+    font-weight: 500;
+    padding: 8px;
+    border-radius: 6px;
+    cursor: pointer;
+    margin-top: 6px;
+    transition: background 0.15s;
+  }
+
+  .m2-animate-btn:hover { background: #F5A62330; }
+  .m2-animate-btn.playing { border-color: #34D399; color: #34D399; background: #34D39918; }
+
+  .m2-stat { display: flex; justify-content: space-between; margin-bottom: 5px; }
+  .m2-stat-label { font-size: 11px; color: #4A7FA5; }
+  .m2-stat-val { font-family: 'JetBrains Mono', monospace; font-size: 12px; color: #E8EDF2; }
+  .m2-stat-val.neg { color: #F87171; }
+  .m2-stat-val.zero { color: #FBBF24; }
+
+  .m2-insight {
+    margin: 8px 14px;
+    padding: 10px 12px;
+    background: #F5A62312;
+    border-left: 2px solid #F5A623;
+    border-radius: 0 6px 6px 0;
+  }
+
+  .m2-insight-label { font-size: 10px; font-weight: 500; color: #F5A623; letter-spacing: 0.05em; margin-bottom: 4px; }
+  .m2-insight p { font-size: 12px; color: #8A9AB0; line-height: 1.5; }
+
+  .m2-vec-row {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-bottom: 6px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+  }
+
+  .m2-vec-dot { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; }
+
+  .m2-hint { font-size: 10px; color: #2A4A6A; text-align: center; padding: 8px; flex-shrink: 0; }
+
+  #m2-progress {
+    height: 2px;
+    background: #1E3A5F;
+    flex-shrink: 0;
+  }
+  #m2-progress-bar {
+    height: 100%;
+    background: #F5A623;
+    width: 0%;
+    transition: width 0.05s linear;
+  }
+</style>
+
+<div id="m2-root">
+  <div id="m2-header">
+    <span class="m2-badge">M2</span>
+    <h1>Transformações Lineares</h1>
+    <nav class="lt-header-nav">
+      <a class="lt-nav-link" href="index.html">← início</a>
+    </nav>
+  </div>
+  <div id="m2-progress"><div id="m2-progress-bar"></div></div>
+  <div id="m2-body">
+    <div id="m2-canvas-wrap">
+      <canvas id="m2-canvas"></canvas>
+    </div>
+    <div id="m2-panel">
+
+      <div class="m2-section">
+        <div class="m2-section-title">Matriz A (3×3)</div>
+        <div class="m2-col-labels">
+          <span class="m2-col-label" style="color:#F5A623">col 1</span>
+          <span class="m2-col-label" style="color:#38BDF8">col 2</span>
+          <span class="m2-col-label" style="color:#34D399">col 3</span>
+        </div>
+        <div class="m2-matrix" id="m2-matrix">
+          <input class="m2-cell col0" data-r="0" data-c="0" type="number" value="1" step="0.5">
+          <input class="m2-cell col1" data-r="0" data-c="1" type="number" value="0" step="0.5">
+          <input class="m2-cell col2" data-r="0" data-c="2" type="number" value="0" step="0.5">
+          <input class="m2-cell col0" data-r="1" data-c="0" type="number" value="0" step="0.5">
+          <input class="m2-cell col1" data-r="1" data-c="1" type="number" value="1" step="0.5">
+          <input class="m2-cell col2" data-r="1" data-c="2" type="number" value="0" step="0.5">
+          <input class="m2-cell col0" data-r="2" data-c="0" type="number" value="0" step="0.5">
+          <input class="m2-cell col1" data-r="2" data-c="1" type="number" value="0" step="0.5">
+          <input class="m2-cell col2" data-r="2" data-c="2" type="number" value="1" step="0.5">
+        </div>
+        <button class="m2-animate-btn" id="m2-anim-btn">▶ animar transformação</button>
+      </div>
+
+      <div class="m2-section">
+        <div class="m2-section-title">Presets</div>
+        <div class="m2-presets">
+          <button class="m2-preset-btn" data-preset="identity">identidade</button>
+          <button class="m2-preset-btn" data-preset="rotX">rotação X</button>
+          <button class="m2-preset-btn" data-preset="rotY">rotação Y</button>
+          <button class="m2-preset-btn" data-preset="scale">escala</button>
+          <button class="m2-preset-btn" data-preset="shear">cisalhamento</button>
+          <button class="m2-preset-btn" data-preset="projXY">projeção XY</button>
+          <button class="m2-preset-btn" data-preset="reflectX">reflexão X</button>
+          <button class="m2-preset-btn" data-preset="squeeze">compressão</button>
+        </div>
+      </div>
+
+      <div class="m2-section">
+        <div class="m2-section-title">Propriedades</div>
+        <div class="m2-stat"><span class="m2-stat-label">det(A)</span><span class="m2-stat-val" id="m2-det">1.00</span></div>
+        <div class="m2-stat"><span class="m2-stat-label">rank</span><span class="m2-stat-val" id="m2-rank">3</span></div>
+        <div class="m2-stat"><span class="m2-stat-label">tipo</span><span class="m2-stat-val" id="m2-type" style="font-size:10px">inversível</span></div>
+      </div>
+
+      <div class="m2-section">
+        <div class="m2-section-title">Vetores-coluna de A</div>
+        <div class="m2-vec-row">
+          <div class="m2-vec-dot" style="background:#F5A623"></div>
+          <span style="color:#4A7FA5">a₁ =</span>
+          <span id="m2-col1" style="color:#F5A623">( 1, 0, 0 )</span>
+        </div>
+        <div class="m2-vec-row">
+          <div class="m2-vec-dot" style="background:#38BDF8"></div>
+          <span style="color:#4A7FA5">a₂ =</span>
+          <span id="m2-col2" style="color:#38BDF8">( 0, 1, 0 )</span>
+        </div>
+        <div class="m2-vec-row">
+          <div class="m2-vec-dot" style="background:#34D399"></div>
+          <span style="color:#4A7FA5">a₃ =</span>
+          <span id="m2-col3" style="color:#34D399">( 0, 0, 1 )</span>
+        </div>
+      </div>
+
+      <div class="m2-insight">
+        <div class="m2-insight-label">💡 insight</div>
+        <p id="m2-insight">As colunas da matriz são exatamente onde os vetores da base canônica (e₁, e₂, e₃) vão parar após a transformação.</p>
+      </div>
+
+      <div class="m2-hint">arraste para orbitar · scroll para zoom</div>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script>
+(function() {
+  const canvas = document.getElementById('m2-canvas');
+  const wrap = document.getElementById('m2-canvas-wrap');
+  const renderer = new THREE.WebGLRenderer({ canvas, antialias: true });
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+  renderer.setClearColor(0x0A0A0F, 1);
+
+  const scene = new THREE.Scene();
+  const camera = new THREE.PerspectiveCamera(45, 1, 0.1, 200);
+  let spherical = { theta: 0.7, phi: 1.0, r: 11 };
+
+  function updateCamera() {
+    camera.position.set(
+      spherical.r * Math.sin(spherical.phi) * Math.sin(spherical.theta),
+      spherical.r * Math.cos(spherical.phi),
+      spherical.r * Math.sin(spherical.phi) * Math.cos(spherical.theta)
+    );
+    camera.lookAt(0, 0, 0);
+  }
+  updateCamera();
+
+  function resize() {
+    const w = wrap.clientWidth, h = wrap.clientHeight;
+    renderer.setSize(w, h, false);
+    camera.aspect = w / h;
+    camera.updateProjectionMatrix();
+  }
+  resize();
+
+  let isDragging = false, lastX = 0, lastY = 0;
+  canvas.addEventListener('mousedown', e => { isDragging = true; lastX = e.clientX; lastY = e.clientY; });
+  window.addEventListener('mouseup', () => isDragging = false);
+  window.addEventListener('mousemove', e => {
+    if (!isDragging) return;
+    spherical.theta -= (e.clientX - lastX) * 0.008;
+    spherical.phi = Math.max(0.1, Math.min(Math.PI - 0.1, spherical.phi + (e.clientY - lastY) * 0.008));
+    lastX = e.clientX; lastY = e.clientY;
+    updateCamera();
+  });
+  canvas.addEventListener('wheel', e => {
+    spherical.r = Math.max(4, Math.min(25, spherical.r + e.deltaY * 0.012));
+    updateCamera(); e.preventDefault();
+  }, { passive: false });
+
+  let lastTouch = null;
+  canvas.addEventListener('touchstart', e => { lastTouch = e.touches[0]; e.preventDefault(); }, { passive: false });
+  canvas.addEventListener('touchmove', e => {
+    if (!lastTouch) return;
+    const t = e.touches[0];
+    spherical.theta -= (t.clientX - lastTouch.clientX) * 0.008;
+    spherical.phi = Math.max(0.1, Math.min(Math.PI - 0.1, spherical.phi + (t.clientY - lastTouch.clientY) * 0.008));
+    lastTouch = t; updateCamera(); e.preventDefault();
+  }, { passive: false });
+
+  // --- Matrix state ---
+  let M = [[1,0,0],[0,1,0],[0,0,1]];
+
+  const PRESETS = {
+    identity: { m: [[1,0,0],[0,1,0],[0,0,1]], label: 'identidade', insight: 'A identidade não faz nada — cada vetor vai exatamente para onde já estava. É o "neutro" das transformações.' },
+    rotX:     { m: [[1,0,0],[0,0,-1],[0,1,0]], label: 'rotação X 90°', insight: 'Rotação de 90° em torno do eixo X. O determinante é 1: volume preservado, sem reflexão.' },
+    rotY:     { m: [[0,0,1],[0,1,0],[-1,0,0]], label: 'rotação Y 90°', insight: 'Rotação de 90° em torno do eixo Y. Observe como o plano XZ gira.' },
+    scale:    { m: [[2,0,0],[0,2,0],[0,0,2]], label: 'escala uniforme', insight: 'Escala uniforme por 2: o volume aumenta 8× (det = 8 = 2³). Cada dimensão dobra.' },
+    shear:    { m: [[1,0.8,0],[0,1,0],[0,0,1]], label: 'cisalhamento', insight: 'Cisalhamento: o eixo Y "empurra" X. O volume é preservado (det = 1), mas os ângulos não.' },
+    projXY:   { m: [[1,0,0],[0,1,0],[0,0,0]], label: 'projeção XY', insight: 'Projeção no plano XY: tudo que tinha componente Z é achatado. det = 0 — a transformação é irreversível.' },
+    reflectX: { m: [[-1,0,0],[0,1,0],[0,0,1]], label: 'reflexão X', insight: 'Reflexão no eixo X: det = -1. O sinal negativo indica inversão de orientação — como um espelho.' },
+    squeeze:  { m: [[2,0,0],[0,0.5,0],[0,0,1]], label: 'compressão', insight: 'Estica em X e comprime em Y, preservando área (det = 1). Chamada de "squeeze map".' },
+  };
+
+  // --- Grid lines (original) ---
+  const GRID_N = 4;
+  const GRID_COLOR_BASE = 0x1E3A5F;
+  const GRID_COLOR_TRANS = 0xF5A623;
+
+  function gridPoints() {
+    const pts = [];
+    for (let i = -GRID_N; i <= GRID_N; i++) {
+      for (let j = -GRID_N; j <= GRID_N; j++) {
+        pts.push([i, 0, j]);
+      }
+    }
+    return pts;
+  }
+
+  function applyMatrix(m, v) {
+    return [
+      m[0][0]*v[0] + m[0][1]*v[1] + m[0][2]*v[2],
+      m[1][0]*v[0] + m[1][1]*v[1] + m[1][2]*v[2],
+      m[2][0]*v[0] + m[2][1]*v[1] + m[2][2]*v[2],
+    ];
+  }
+
+  function lerpVec(a, b, t) {
+    return [a[0]+(b[0]-a[0])*t, a[1]+(b[1]-a[1])*t, a[2]+(b[2]-a[2])*t];
+  }
+
+  // Build grid line segments
+  function buildGridLines(mInterp, t) {
+    const segs = [];
+    const n = GRID_N;
+    for (let i = -n; i <= n; i++) {
+      for (let j = -n; j < n; j++) {
+        const a0 = [i, 0, j], b0 = [i, 0, j+1];
+        const aT = applyMatrix(mInterp, a0), bT = applyMatrix(mInterp, b0);
+        const aL = lerpVec(a0, aT, t), bL = lerpVec(b0, bT, t);
+        segs.push(aL[0], aL[1], aL[2], bL[0], bL[1], bL[2]);
+      }
+      for (let j = -n; j < n; j++) {
+        const a0 = [j, 0, i], b0 = [j+1, 0, i];
+        const aT = applyMatrix(mInterp, a0), bT = applyMatrix(mInterp, b0);
+        const aL = lerpVec(a0, aT, t), bL = lerpVec(b0, bT, t);
+        segs.push(aL[0], aL[1], aL[2], bL[0], bL[1], bL[2]);
+      }
+    }
+    return segs;
+  }
+
+  let gridMesh = null;
+  let axisGroup = null;
+  let colVecGroup = null;
+
+  function makeArrow(from, to, color, headR = 0.12) {
+    const g = new THREE.Group();
+    const dir = [to[0]-from[0], to[1]-from[1], to[2]-from[2]];
+    const len = Math.sqrt(dir[0]**2+dir[1]**2+dir[2]**2);
+    if (len < 0.01) return g;
+    const mat = new THREE.LineBasicMaterial({ color });
+    const geo = new THREE.BufferGeometry();
+    geo.setAttribute('position', new THREE.Float32BufferAttribute([from[0],from[1],from[2],to[0],to[1],to[2]], 3));
+    g.add(new THREE.Line(geo, mat));
+    const normDir = new THREE.Vector3(...dir).normalize();
+    const cone = new THREE.Mesh(new THREE.ConeGeometry(headR, headR*1.8, 8), new THREE.MeshBasicMaterial({ color }));
+    cone.position.set(to[0], to[1], to[2]);
+    cone.quaternion.setFromUnitVectors(new THREE.Vector3(0,1,0), normDir);
+    cone.position.addScaledVector(normDir, -headR*0.9);
+    g.add(cone);
+    return g;
+  }
+
+  function buildScene(t) {
+    if (gridMesh) scene.remove(gridMesh);
+    if (axisGroup) scene.remove(axisGroup);
+    if (colVecGroup) scene.remove(colVecGroup);
+
+    // interpolate matrix
+    const ID = [[1,0,0],[0,1,0],[0,0,1]];
+    const mInterp = ID.map((row, r) => row.map((_, c) => ID[r][c] + (M[r][c] - ID[r][c]) * t));
+
+    // grid
+    const segs = buildGridLines(mInterp, 1);
+    const gGeo = new THREE.BufferGeometry();
+    gGeo.setAttribute('position', new THREE.Float32BufferAttribute(segs, 3));
+    const tColor = t < 0.05 ? GRID_COLOR_BASE : new THREE.Color().setHSL(0.12, 0.9, 0.3 + t*0.25).getHex();
+    gridMesh = new THREE.LineSegments(gGeo, new THREE.LineBasicMaterial({ color: tColor, transparent: true, opacity: 0.55 }));
+    scene.add(gridMesh);
+
+    // original ghost grid at t > 0.05
+    if (t > 0.05) {
+      const ghostSegs = buildGridLines(ID, 1);
+      const gGeo2 = new THREE.BufferGeometry();
+      gGeo2.setAttribute('position', new THREE.Float32BufferAttribute(ghostSegs, 3));
+      const ghost = new THREE.LineSegments(gGeo2, new THREE.LineBasicMaterial({ color: 0x1E3A5F, transparent: true, opacity: 0.2 }));
+      scene.add(ghost);
+      setTimeout(() => scene.remove(ghost), 50);
+    }
+
+    // axes (static)
+    axisGroup = new THREE.Group();
+    [[1,0,0,0xEF4444],[0,1,0,0x22C55E],[0,0,1,0x3B82F6]].forEach(([x,y,z,c]) => {
+      const m2 = new THREE.LineBasicMaterial({ color: c, transparent: true, opacity: 0.5 });
+      const g2 = new THREE.BufferGeometry();
+      g2.setAttribute('position', new THREE.Float32BufferAttribute([0,0,0,x*5,y*5,z*5], 3));
+      axisGroup.add(new THREE.Line(g2, m2));
+    });
+    scene.add(axisGroup);
+
+    // column vectors of A (interpolated)
+    colVecGroup = new THREE.Group();
+    const cols = [[mInterp[0][0], mInterp[1][0], mInterp[2][0]],
+                  [mInterp[0][1], mInterp[1][1], mInterp[2][1]],
+                  [mInterp[0][2], mInterp[1][2], mInterp[2][2]]];
+    const colColors = [0xF5A623, 0x38BDF8, 0x34D399];
+    cols.forEach((col, i) => {
+      colVecGroup.add(makeArrow([0,0,0], col, colColors[i], 0.15));
+    });
+    scene.add(colVecGroup);
+  }
+
+  // --- Animation ---
+  let animT = 0;
+  let isPlaying = false;
+  let animDir = 1;
+  let animRAF = null;
+
+  function animStep() {
+    animT += 0.015 * animDir;
+    if (animT >= 1) { animT = 1; animDir = -1; }
+    if (animT <= 0) { animT = 0; animDir = 1; isPlaying = false; updateAnimBtn(); }
+    document.getElementById('m2-progress-bar').style.width = (animT * 100) + '%';
+    buildScene(animT);
+    if (isPlaying) animRAF = requestAnimationFrame(animStep);
+  }
+
+  function updateAnimBtn() {
+    const btn = document.getElementById('m2-anim-btn');
+    if (isPlaying) { btn.textContent = '⏸ pausar'; btn.classList.add('playing'); }
+    else { btn.textContent = animT > 0.5 ? '↩ reverter' : '▶ animar transformação'; btn.classList.remove('playing'); }
+  }
+
+  document.getElementById('m2-anim-btn').addEventListener('click', () => {
+    if (isPlaying) { isPlaying = false; cancelAnimationFrame(animRAF); updateAnimBtn(); return; }
+    if (animT >= 1) { animDir = -1; }
+    else { animDir = 1; }
+    isPlaying = true;
+    updateAnimBtn();
+    animRAF = requestAnimationFrame(animStep);
+  });
+
+  // --- Matrix read/write ---
+  function readMatrix() {
+    const cells = document.querySelectorAll('.m2-cell');
+    cells.forEach(inp => {
+      const r = +inp.dataset.r, c = +inp.dataset.c;
+      M[r][c] = parseFloat(inp.value) || 0;
+    });
+  }
+
+  function writeMatrix(m) {
+    const cells = document.querySelectorAll('.m2-cell');
+    cells.forEach(inp => {
+      const r = +inp.dataset.r, c = +inp.dataset.c;
+      inp.value = m[r][c];
+    });
+    M = m.map(row => [...row]);
+  }
+
+  function det3(m) {
+    return m[0][0]*(m[1][1]*m[2][2]-m[1][2]*m[2][1])
+          -m[0][1]*(m[1][0]*m[2][2]-m[1][2]*m[2][0])
+          +m[0][2]*(m[1][0]*m[2][1]-m[1][1]*m[2][0]);
+  }
+
+  function estimateRank(m) {
+    const eps = 1e-6;
+    const flat = [
+      [...m[0]], [...m[1]], [...m[2]]
+    ];
+    let rank = 0;
+    for (let col = 0, row = 0; col < 3 && row < 3; col++) {
+      let pivot = -1;
+      for (let i = row; i < 3; i++) if (Math.abs(flat[i][col]) > eps) { pivot = i; break; }
+      if (pivot < 0) continue;
+      [flat[row], flat[pivot]] = [flat[pivot], flat[row]];
+      const sc = flat[row][col];
+      flat[row] = flat[row].map(x => x / sc);
+      for (let i = 0; i < 3; i++) if (i !== row) {
+        const f = flat[i][col];
+        flat[i] = flat[i].map((x, j) => x - f * flat[row][j]);
+      }
+      rank++; row++;
+    }
+    return rank;
+  }
+
+  function updateStats() {
+    const d = det3(M);
+    const detEl = document.getElementById('m2-det');
+    detEl.textContent = d.toFixed(2);
+    detEl.className = 'm2-stat-val' + (d < 0 ? ' neg' : d === 0 ? ' zero' : '');
+
+    const rank = estimateRank(M);
+    document.getElementById('m2-rank').textContent = rank;
+    document.getElementById('m2-type').textContent = rank === 3 ? 'inversível' : rank === 2 ? 'singular (plano)' : rank <= 1 ? 'singular (linha/ponto)' : '—';
+
+    document.getElementById('m2-col1').textContent = `( ${M[0][0].toFixed(1)}, ${M[1][0].toFixed(1)}, ${M[2][0].toFixed(1)} )`;
+    document.getElementById('m2-col2').textContent = `( ${M[0][1].toFixed(1)}, ${M[1][1].toFixed(1)}, ${M[2][1].toFixed(1)} )`;
+    document.getElementById('m2-col3').textContent = `( ${M[0][2].toFixed(1)}, ${M[1][2].toFixed(1)}, ${M[2][2].toFixed(1)} )`;
+  }
+
+  function onMatrixChange() {
+    readMatrix();
+    animT = 0;
+    document.getElementById('m2-progress-bar').style.width = '0%';
+    updateAnimBtn();
+    buildScene(0);
+    updateStats();
+    document.getElementById('m2-insight').textContent = 'Edite a matriz e clique em "animar transformação" para ver o espaço se deformar.';
+    document.querySelectorAll('.m2-preset-btn').forEach(b => b.classList.remove('active'));
+  }
+
+  document.querySelectorAll('.m2-cell').forEach(inp => inp.addEventListener('input', onMatrixChange));
+
+  document.querySelectorAll('.m2-preset-btn').forEach(btn => {
+    btn.addEventListener('click', function() {
+      const p = PRESETS[this.dataset.preset];
+      if (!p) return;
+      writeMatrix(p.m);
+      animT = 0;
+      animDir = 1;
+      isPlaying = false;
+      cancelAnimationFrame(animRAF);
+      document.getElementById('m2-progress-bar').style.width = '0%';
+      updateAnimBtn();
+      buildScene(0);
+      updateStats();
+      document.getElementById('m2-insight').textContent = p.insight;
+      document.querySelectorAll('.m2-preset-btn').forEach(b => b.classList.remove('active'));
+      this.classList.add('active');
+    });
+  });
+
+  // render loop
+  function animate() {
+    requestAnimationFrame(animate);
+    resize();
+    renderer.render(scene, camera);
+  }
+
+  buildScene(0);
+  updateStats();
+  animate();
+})();
+</script>
+</body>
+</html>

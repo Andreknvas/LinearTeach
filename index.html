@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>LinearTeach — Visualização Interativa de Álgebra Linear</title>
+  <meta name="description" content="Ferramenta interativa para ensino de álgebra linear com intuição geométrica. Vetores, transformações, sistemas, autovalores e mudança de base em R³.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Space Grotesk', sans-serif;
+      background: #0A0A0F;
+      color: #E8EDF2;
+      min-height: 100vh;
+      line-height: 1.5;
+    }
+
+    .lt-page {
+      max-width: 960px;
+      margin: 0 auto;
+      padding: 48px 24px 64px;
+    }
+
+    .lt-hero {
+      text-align: center;
+      margin-bottom: 48px;
+    }
+
+    .lt-logo {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 16px;
+    }
+
+    .lt-logo-mark {
+      width: 36px;
+      height: 36px;
+      background: linear-gradient(135deg, #7C3AED 0%, #38BDF8 50%, #34D399 100%);
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 14px;
+      font-weight: 500;
+      color: #0A0A0F;
+    }
+
+    .lt-logo-text {
+      font-size: 28px;
+      font-weight: 600;
+      letter-spacing: -0.02em;
+    }
+
+    .lt-tagline {
+      font-size: 15px;
+      color: #8A9AB0;
+      max-width: 520px;
+      margin: 0 auto 12px;
+    }
+
+    .lt-sub {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px;
+      color: #4A7FA5;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+
+    .lt-topnav {
+      display: flex;
+      justify-content: center;
+      gap: 12px;
+      margin-bottom: 32px;
+    }
+
+    .lt-topnav-link {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px;
+      color: #8A9AB0;
+      text-decoration: none;
+      padding: 6px 12px;
+      border: 0.5px solid #1E3A5F;
+      border-radius: 6px;
+      transition: color 0.15s, border-color 0.15s;
+    }
+
+    .lt-topnav-link:hover { color: #E8EDF2; border-color: #2A5A8A; }
+    .lt-topnav-link.active { color: #A78BFA; border-color: #7C3AED55; background: #7C3AED12; }
+
+    .lt-footer a {
+      color: #4A7FA5;
+      text-decoration: none;
+    }
+
+    .lt-footer a:hover { color: #A78BFA; }
+
+    .lt-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 16px;
+    }
+
+    .lt-card {
+      background: #0F0F1A;
+      border: 0.5px solid #1E3A5F;
+      border-radius: 12px;
+      padding: 20px;
+      text-decoration: none;
+      color: inherit;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      transition: border-color 0.2s, transform 0.15s, box-shadow 0.2s;
+    }
+
+    .lt-card:hover {
+      border-color: var(--accent);
+      transform: translateY(-2px);
+      box-shadow: 0 8px 32px #00000066;
+    }
+
+    .lt-card-header {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .lt-badge {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px;
+      background: var(--accent-bg);
+      border: 0.5px solid var(--accent-border);
+      color: var(--accent);
+      padding: 3px 8px;
+      border-radius: 4px;
+      letter-spacing: 0.05em;
+      flex-shrink: 0;
+    }
+
+    .lt-card-title {
+      font-size: 15px;
+      font-weight: 500;
+    }
+
+    .lt-card-desc {
+      font-size: 13px;
+      color: #8A9AB0;
+      flex: 1;
+    }
+
+    .lt-card-insight {
+      font-size: 11px;
+      color: #4A7FA5;
+      font-style: italic;
+      padding-top: 8px;
+      border-top: 0.5px solid #1E2A3A;
+    }
+
+    .lt-card-arrow {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 12px;
+      color: var(--accent);
+      margin-top: 4px;
+    }
+
+    .lt-footer {
+      margin-top: 48px;
+      text-align: center;
+      font-size: 12px;
+      color: #2A4A6A;
+    }
+
+    .lt-footer span {
+      font-family: 'JetBrains Mono', monospace;
+      color: #4A7FA5;
+    }
+
+    .lt-card.m1 { --accent: #A78BFA; --accent-bg: #7C3AED22; --accent-border: #7C3AED66; }
+    .lt-card.m2 { --accent: #F5A623; --accent-bg: #F5A62322; --accent-border: #F5A62366; }
+    .lt-card.m3 { --accent: #38BDF8; --accent-bg: #38BDF822; --accent-border: #38BDF866; }
+    .lt-card.m4 { --accent: #34D399; --accent-bg: #34D39922; --accent-border: #34D39966; }
+    .lt-card.m5 { --accent: #F472B6; --accent-bg: #F472B622; --accent-border: #F472B666; }
+  </style>
+</head>
+<body>
+  <div class="lt-page">
+    <nav class="lt-topnav">
+      <a class="lt-topnav-link active" href="index.html">módulos</a>
+      <a class="lt-topnav-link" href="sobre.html">sobre o projeto</a>
+    </nav>
+
+    <header class="lt-hero">
+      <div class="lt-logo">
+        <div class="lt-logo-mark">LT</div>
+        <span class="lt-logo-text">LinearTeach</span>
+      </div>
+      <p class="lt-tagline">
+        Visualização interativa de álgebra linear para ensino superior.
+        Veja o objeto matemático e a operação ao mesmo tempo.
+      </p>
+      <p class="lt-sub">Three.js · PT-BR · R³</p>
+    </header>
+
+    <main class="lt-grid">
+      <a class="lt-card m1" href="algebra_linear_modulo1_vetores.html">
+        <div class="lt-card-header">
+          <span class="lt-badge">M1</span>
+          <span class="lt-card-title">Vetores no Espaço</span>
+        </div>
+        <p class="lt-card-desc">
+          Representação de vetores em R³, soma, produto escalar e escalar.
+          Arraste coordenadas e observe magnitude e direção.
+        </p>
+        <p class="lt-card-insight">"Um vetor é uma flecha, não um ponto."</p>
+        <span class="lt-card-arrow">abrir módulo →</span>
+      </a>
+
+      <a class="lt-card m2" href="algebra_linear_modulo2_transformacoes.html">
+        <div class="lt-card-header">
+          <span class="lt-badge">M2</span>
+          <span class="lt-card-title">Transformações Lineares</span>
+        </div>
+        <p class="lt-card-desc">
+          Matriz 3×3 editável com grade que se deforma em tempo real.
+          Rotação, cisalhamento, projeção e reflexão animados.
+        </p>
+        <p class="lt-card-insight">"Matriz = receita de como deformar o espaço."</p>
+        <span class="lt-card-arrow">abrir módulo →</span>
+      </a>
+
+      <a class="lt-card m3" href="algebra_linear_modulo3_sistemas.html">
+        <div class="lt-card-header">
+          <span class="lt-badge">M3</span>
+          <span class="lt-card-title">Sistemas Lineares</span>
+        </div>
+        <p class="lt-card-desc">
+          Cada equação é um plano. Veja interseções: solução única,
+          infinitas soluções ou sistema impossível.
+        </p>
+        <p class="lt-card-insight">"Resolver = encontrar onde os planos se encontram."</p>
+        <span class="lt-card-arrow">abrir módulo →</span>
+      </a>
+
+      <a class="lt-card m4" href="algebra_linear_modulo4_autovalores.html">
+        <div class="lt-card-header">
+          <span class="lt-badge">M4</span>
+          <span class="lt-card-title">Autovalores e Autovetores</span>
+        </div>
+        <p class="lt-card-desc">
+          Vetores que não mudam de direção sob a transformação —
+          apenas escalados pelo autovalor λ.
+        </p>
+        <p class="lt-card-insight">"Autovetores = direções naturais da transformação."</p>
+        <span class="lt-card-arrow">abrir módulo →</span>
+      </a>
+
+      <a class="lt-card m5" href="algebra_linear_modulo5_base.html">
+        <div class="lt-card-header">
+          <span class="lt-badge">M5</span>
+          <span class="lt-card-title">Base e Mudança de Base</span>
+        </div>
+        <p class="lt-card-desc">
+          Troque a base e veja as coordenadas do mesmo vetor mudarem.
+          Colunas da matriz = vetores da nova base.
+        </p>
+        <p class="lt-card-insight">"Coordenadas dependem da régua que você usa."</p>
+        <span class="lt-card-arrow">abrir módulo →</span>
+      </a>
+    </main>
+
+    <footer class="lt-footer">
+      Projeto acadêmico · <span>LinearTeach</span> ·
+      <a href="sobre.html">Sobre o projeto</a>
+    </footer>
+  </div>
+</body>
+</html>

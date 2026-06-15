@@ -1,0 +1,779 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>M5 — Base e Mudança de Base | LinearTeach</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+</head>
+<body>
+
+<h2 class="sr-only">Módulo 5: Base e Mudança de Base — visualização de como coordenadas dependem da base escolhida em R³</h2>
+
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  html, body {
+    height: 100%;
+    overflow: hidden;
+    background: #0A0A0F;
+  }
+
+  .sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+  }
+
+  #m5-root {
+    font-family: 'Space Grotesk', sans-serif;
+    background: #0A0A0F;
+    color: #E8EDF2;
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+    width: 100vw;
+    overflow: hidden;
+  }
+
+  #m5-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 16px;
+    background: #0F0F1A;
+    border-bottom: 0.5px solid #1E3A5F;
+    flex-shrink: 0;
+  }
+
+  .m5-badge {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    background: #F472B622;
+    border: 0.5px solid #F472B666;
+    color: #F472B6;
+    padding: 3px 8px;
+    border-radius: 4px;
+    letter-spacing: 0.05em;
+  }
+
+  #m5-header h1 { font-size: 14px; font-weight: 500; color: #E8EDF2; flex: 1; }
+
+  .lt-header-nav { display: flex; gap: 8px; flex-shrink: 0; }
+
+  .lt-nav-link {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    color: #4A7FA5;
+    text-decoration: none;
+    padding: 4px 8px;
+    border: 0.5px solid #1E3A5F;
+    border-radius: 4px;
+    transition: color 0.15s, border-color 0.15s;
+    white-space: nowrap;
+  }
+
+  .lt-nav-link:hover { color: #F472B6; border-color: #F472B655; }
+
+  #m5-body { display: flex; flex: 1; min-height: 0; }
+  #m5-canvas-wrap { flex: 1; position: relative; min-width: 0; }
+  #m5-canvas { width: 100%; height: 100%; display: block; }
+
+  #m5-panel {
+    width: 240px;
+    flex-shrink: 0;
+    background: #0F0F1A;
+    border-left: 0.5px solid #1E3A5F;
+    display: flex;
+    flex-direction: column;
+    overflow-y: auto;
+  }
+
+  .m5-section { padding: 10px 14px; border-bottom: 0.5px solid #1E2A3A; }
+
+  .m5-section-title {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    color: #4A7FA5;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    margin-bottom: 8px;
+  }
+
+  .m5-matrix {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 4px;
+    margin-bottom: 6px;
+  }
+
+  .m5-cell {
+    background: #0A0A0F;
+    border: 0.5px solid #1E3A5F;
+    color: #E8EDF2;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    padding: 5px 3px;
+    border-radius: 4px;
+    text-align: center;
+    width: 100%;
+  }
+  .m5-cell:focus { outline: none; border-color: #F472B6; }
+  .m5-cell.col0 { border-top-color: #F5A62355; }
+  .m5-cell.col1 { border-top-color: #38BDF855; }
+  .m5-cell.col2 { border-top-color: #34D39955; }
+
+  .m5-col-labels {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 4px;
+    margin-bottom: 2px;
+  }
+  .m5-col-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9px;
+    text-align: center;
+  }
+
+  .m5-vec-row {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-bottom: 6px;
+  }
+  .m5-vec-dot { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; }
+  .m5-vec-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    color: #A8B8C8;
+    width: 14px;
+    flex-shrink: 0;
+  }
+  .m5-coord-input {
+    flex: 1;
+    background: #0A0A0F;
+    border: 0.5px solid #1E3A5F;
+    color: #E8EDF2;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    padding: 4px 4px;
+    border-radius: 4px;
+    text-align: center;
+    min-width: 0;
+  }
+  .m5-coord-input:focus { outline: none; border-color: #F472B6; }
+
+  .m5-coord-box {
+    background: #0A0A0F;
+    border: 0.5px solid #1E3A5F;
+    border-radius: 6px;
+    padding: 8px 10px;
+    margin-bottom: 6px;
+  }
+  .m5-coord-box.std { border-left: 2px solid #A78BFA; }
+  .m5-coord-box.basis { border-left: 2px solid #F472B6; }
+
+  .m5-coord-box-title {
+    font-size: 10px;
+    color: #4A7FA5;
+    margin-bottom: 4px;
+    letter-spacing: 0.05em;
+  }
+  .m5-coord-val {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    color: #E8EDF2;
+  }
+
+  .m5-presets {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 4px;
+  }
+  .m5-preset-btn {
+    background: transparent;
+    border: 0.5px solid #1E3A5F;
+    color: #8A9AB0;
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 10px;
+    padding: 5px 4px;
+    border-radius: 5px;
+    cursor: pointer;
+    text-align: center;
+    transition: background 0.15s;
+    line-height: 1.3;
+  }
+  .m5-preset-btn:hover { background: #1E3A5F33; color: #C8D8E8; }
+  .m5-preset-btn.active { border-color: #F472B6; color: #F472B6; background: #F472B612; }
+
+  .m5-anim-btn {
+    width: 100%;
+    background: #F472B618;
+    border:  0.5px solid #F472B655;
+    color: #F472B6;
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 12px;
+    font-weight: 500;
+    padding: 8px;
+    border-radius: 6px;
+    cursor: pointer;
+    margin-top: 6px;
+    transition: background 0.15s;
+  }
+  .m5-anim-btn:hover { background: #F472B630; }
+  .m5-anim-btn.playing { border-color: #34D399; color: #34D399; background: #34D39918; }
+
+  .m5-toggle-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 6px;
+  }
+  .m5-toggle-label { font-size: 11px; color: #8A9AB0; }
+  .m5-toggle {
+    appearance: none;
+    width: 32px; height: 16px;
+    background: #1E3A5F;
+    border-radius: 8px;
+    cursor: pointer;
+    position: relative;
+    transition: background 0.2s;
+    flex-shrink: 0;
+  }
+  .m5-toggle:checked { background: #F472B6; }
+  .m5-toggle::after {
+    content: '';
+    position: absolute;
+    width: 12px; height: 12px;
+    background: #E8EDF2;
+    border-radius: 50%;
+    top: 2px; left: 2px;
+    transition: left 0.2s;
+  }
+  .m5-toggle:checked::after { left: 18px; }
+
+  .m5-stat { display: flex; justify-content: space-between; margin-bottom: 5px; }
+  .m5-stat-label { font-size: 11px; color: #4A7FA5; }
+  .m5-stat-val { font-family: 'JetBrains Mono', monospace; font-size: 11px; color: #E8EDF2; }
+  .m5-stat-val.warn { color: #FBBF24; }
+  .m5-stat-val.bad { color: #F87171; }
+
+  .m5-insight {
+    margin: 8px 14px;
+    padding: 10px 12px;
+    background: #F472B612;
+    border-left: 2px solid #F472B6;
+    border-radius: 0 6px 6px 0;
+  }
+  .m5-insight-label { font-size: 10px; font-weight: 500; color: #F472B6; letter-spacing: 0.05em; margin-bottom: 4px; }
+  .m5-insight p { font-size: 12px; color: #8A9AB0; line-height: 1.5; }
+
+  #m5-progress { height: 2px; background: #1E3A5F; flex-shrink: 0; }
+  #m5-progress-bar { height: 100%; background: #F472B6; width: 0%; transition: width 0.04s linear; }
+
+  .m5-hint { font-size: 10px; color: #2A4A6A; text-align: center; padding: 8px; flex-shrink: 0; }
+
+  .m5-formula {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    color: #4A7FA5;
+    text-align: center;
+    margin-top: 4px;
+    line-height: 1.6;
+  }
+</style>
+
+<div id="m5-root">
+  <div id="m5-header">
+    <span class="m5-badge">M5</span>
+    <h1>Base e Mudança de Base</h1>
+    <nav class="lt-header-nav">
+      <a class="lt-nav-link" href="index.html">← início</a>
+    </nav>
+  </div>
+  <div id="m5-progress"><div id="m5-progress-bar"></div></div>
+  <div id="m5-body">
+    <div id="m5-canvas-wrap">
+      <canvas id="m5-canvas"></canvas>
+    </div>
+    <div id="m5-panel">
+
+      <div class="m5-section">
+        <div class="m5-section-title">Matriz P — colunas = nova base</div>
+        <div class="m5-col-labels">
+          <span class="m5-col-label" style="color:#F5A623">b₁</span>
+          <span class="m5-col-label" style="color:#38BDF8">b₂</span>
+          <span class="m5-col-label" style="color:#34D399">b₃</span>
+        </div>
+        <div class="m5-matrix" id="m5-matrix">
+          <input class="m5-cell col0" data-r="0" data-c="0" type="number" value="1" step="0.5">
+          <input class="m5-cell col1" data-r="0" data-c="1" type="number" value="0" step="0.5">
+          <input class="m5-cell col2" data-r="0" data-c="2" type="number" value="0" step="0.5">
+          <input class="m5-cell col0" data-r="1" data-c="0" type="number" value="0" step="0.5">
+          <input class="m5-cell col1" data-r="1" data-c="1" type="number" value="1" step="0.5">
+          <input class="m5-cell col2" data-r="1" data-c="2" type="number" value="0" step="0.5">
+          <input class="m5-cell col0" data-r="2" data-c="0" type="number" value="0" step="0.5">
+          <input class="m5-cell col1" data-r="2" data-c="1" type="number" value="0" step="0.5">
+          <input class="m5-cell col2" data-r="2" data-c="2" type="number" value="1" step="0.5">
+        </div>
+        <button class="m5-anim-btn" id="m5-anim-btn">▶ animar mudança de base</button>
+      </div>
+
+      <div class="m5-section">
+        <div class="m5-section-title">Vetor w (coord. padrão)</div>
+        <div class="m5-vec-row">
+          <div class="m5-vec-dot" style="background:#A78BFA"></div>
+          <span class="m5-vec-label">w</span>
+          <input class="m5-coord-input" id="wx" type="number" value="2" step="0.5">
+          <input class="m5-coord-input" id="wy" type="number" value="1.5" step="0.5">
+          <input class="m5-coord-input" id="wz" type="number" value="1" step="0.5">
+        </div>
+      </div>
+
+      <div class="m5-section">
+        <div class="m5-section-title">Coordenadas de w</div>
+        <div class="m5-coord-box std">
+          <div class="m5-coord-box-title">[w]<sub>std</sub> — base canônica</div>
+          <div class="m5-coord-val" id="m5-coord-std">( 2.00, 1.50, 1.00 )</div>
+        </div>
+        <div class="m5-coord-box basis">
+          <div class="m5-coord-box-title">[w]<sub>B</sub> — na base B</div>
+          <div class="m5-coord-val" id="m5-coord-b">( —, —, — )</div>
+        </div>
+        <div class="m5-formula" id="m5-formula">w = c₁b₁ + c₂b₂ + c₃b₃</div>
+      </div>
+
+      <div class="m5-section">
+        <div class="m5-section-title">Presets</div>
+        <div class="m5-presets">
+          <button class="m5-preset-btn active" data-preset="canonical">canônica</button>
+          <button class="m5-preset-btn" data-preset="rotate">rotação XY</button>
+          <button class="m5-preset-btn" data-preset="oblique">oblíqua</button>
+          <button class="m5-preset-btn" data-preset="scale">escala</button>
+          <button class="m5-preset-btn" data-preset="shear">cisalhada</button>
+          <button class="m5-preset-btn" data-preset="skew">inclinada</button>
+        </div>
+      </div>
+
+      <div class="m5-section">
+        <div class="m5-section-title">Propriedades</div>
+        <div class="m5-stat"><span class="m5-stat-label">det(P)</span><span class="m5-stat-val" id="m5-det">—</span></div>
+        <div class="m5-stat"><span class="m5-stat-label">base válida?</span><span class="m5-stat-val" id="m5-valid">—</span></div>
+      </div>
+
+      <div class="m5-section">
+        <div class="m5-section-title">Visualização</div>
+        <div class="m5-toggle-row">
+          <span class="m5-toggle-label">base canônica e₁,e₂,e₃</span>
+          <input type="checkbox" class="m5-toggle" id="tog-canonical" checked>
+        </div>
+        <div class="m5-toggle-row">
+          <span class="m5-toggle-label">paralelepípedo</span>
+          <input type="checkbox" class="m5-toggle" id="tog-parallelepiped" checked>
+        </div>
+        <div class="m5-toggle-row">
+          <span class="m5-toggle-label">decomposição cᵢbᵢ</span>
+          <input type="checkbox" class="m5-toggle" id="tog-decomp" checked>
+        </div>
+      </div>
+
+      <div class="m5-insight">
+        <div class="m5-insight-label">💡 insight</div>
+        <p id="m5-insight">As colunas de P são os vetores b₁, b₂, b₃ expressos na base canônica. O mesmo ponto w tem coordenadas diferentes em cada base.</p>
+      </div>
+
+      <div class="m5-hint">arraste para orbitar · scroll para zoom</div>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script>
+(function() {
+  const canvas = document.getElementById('m5-canvas');
+  const wrap = document.getElementById('m5-canvas-wrap');
+  const renderer = new THREE.WebGLRenderer({ canvas, antialias: true });
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+  renderer.setClearColor(0x0A0A0F, 1);
+
+  const scene = new THREE.Scene();
+  const camera = new THREE.PerspectiveCamera(45, 1, 0.1, 200);
+  let sph = { theta: 0.75, phi: 1.05, r: 11 };
+
+  function updateCam() {
+    camera.position.set(
+      sph.r * Math.sin(sph.phi) * Math.sin(sph.theta),
+      sph.r * Math.cos(sph.phi),
+      sph.r * Math.sin(sph.phi) * Math.cos(sph.theta)
+    );
+    camera.lookAt(0, 0, 0);
+  }
+  updateCam();
+
+  function resize() {
+    const w = wrap.clientWidth, h = wrap.clientHeight;
+    renderer.setSize(w, h, false);
+    camera.aspect = w / h;
+    camera.updateProjectionMatrix();
+  }
+  resize();
+
+  let drag = false, lx = 0, ly = 0;
+  canvas.addEventListener('mousedown', e => { drag = true; lx = e.clientX; ly = e.clientY; });
+  window.addEventListener('mouseup', () => drag = false);
+  window.addEventListener('mousemove', e => {
+    if (!drag) return;
+    sph.theta -= (e.clientX - lx) * 0.008;
+    sph.phi = Math.max(0.08, Math.min(Math.PI - 0.08, sph.phi + (e.clientY - ly) * 0.008));
+    lx = e.clientX; ly = e.clientY;
+    updateCam();
+  });
+  canvas.addEventListener('wheel', e => {
+    sph.r = Math.max(4, Math.min(24, sph.r + e.deltaY * 0.012));
+    updateCam();
+    e.preventDefault();
+  }, { passive: false });
+  let lt = null;
+  canvas.addEventListener('touchstart', e => { lt = e.touches[0]; e.preventDefault(); }, { passive: false });
+  canvas.addEventListener('touchmove', e => {
+    if (!lt) return;
+    const t = e.touches[0];
+    sph.theta -= (t.clientX - lt.clientX) * 0.008;
+    sph.phi = Math.max(0.08, Math.min(Math.PI - 0.08, sph.phi + (t.clientY - lt.clientY) * 0.008));
+    lt = t;
+    updateCam();
+    e.preventDefault();
+  }, { passive: false });
+
+  let P = [[1,0,0],[0,1,0],[0,0,1]];
+  const ID = [[1,0,0],[0,1,0],[0,0,1]];
+  const BASIS_COLORS = [0xF5A623, 0x38BDF8, 0x34D399];
+  const CANON_COLORS = [0xEF4444, 0x22C55E, 0x3B82F6];
+
+  const PRESETS = {
+    canonical: {
+      m: [[1,0,0],[0,1,0],[0,0,1]],
+      insight: 'Base canônica: b₁=e₁, b₂=e₂, b₃=e₃. As coordenadas [w]_B coincidem com [w]_std — a "régua" padrão.'
+    },
+    rotate: {
+      m: [[0.707,-0.707,0],[0.707,0.707,0],[0,0,1]],
+      insight: 'Rotação de 45° no plano XY: w não muda no espaço, mas suas coordenadas na base B são diferentes!'
+    },
+    oblique: {
+      m: [[1,0.8,0.3],[0,1,0.4],[0,0,1]],
+      insight: 'Base oblíqua: os eixos não são perpendiculares. Coordenadas medem "quanto de cada bᵢ" compõe w, não projeções ortogonais.'
+    },
+    scale: {
+      m: [[2,0,0],[0,0.5,0],[0,0,1.5]],
+      insight: 'Base escalada: b₁ tem comprimento 2, b₂ tem 0,5. Um passo de 1 unidade em b₁ é o dobro na direção e₁.'
+    },
+    shear: {
+      m: [[1,0.6,0.2],[0,1,0.3],[0,0,1]],
+      insight: 'Base cisalhada: as direções se inclinam umas sobre as outras. det(P)=1 preserva volume, mas muda a "forma da régua".'
+    },
+    skew: {
+      m: [[1,1,0],[0,1,1],[1,0,1]],
+      insight: 'Base inclinada em 3D: nenhum eixo alinhado com os cartesianos. Coordenadas [w]_B podem ser contra-intuitivas — mas w é o mesmo vetor!'
+    },
+  };
+
+  function matMul(m, v) {
+    return [
+      m[0][0]*v[0] + m[0][1]*v[1] + m[0][2]*v[2],
+      m[1][0]*v[0] + m[1][1]*v[1] + m[1][2]*v[2],
+      m[2][0]*v[0] + m[2][1]*v[1] + m[2][2]*v[2],
+    ];
+  }
+
+  function det3(m) {
+    return m[0][0]*(m[1][1]*m[2][2]-m[1][2]*m[2][1])
+          -m[0][1]*(m[1][0]*m[2][2]-m[1][2]*m[2][0])
+          +m[0][2]*(m[1][0]*m[2][1]-m[1][1]*m[2][0]);
+  }
+
+  function inv3(m) {
+    const d = det3(m);
+    if (Math.abs(d) < 1e-8) return null;
+    const a = m;
+    const inv = [
+      [
+        (a[1][1]*a[2][2]-a[1][2]*a[2][1])/d,
+        (a[0][2]*a[2][1]-a[0][1]*a[2][2])/d,
+        (a[0][1]*a[1][2]-a[0][2]*a[1][1])/d,
+      ],
+      [
+        (a[1][2]*a[2][0]-a[1][0]*a[2][2])/d,
+        (a[0][0]*a[2][2]-a[0][2]*a[2][0])/d,
+        (a[0][2]*a[1][0]-a[0][0]*a[1][2])/d,
+      ],
+      [
+        (a[1][0]*a[2][1]-a[1][1]*a[2][0])/d,
+        (a[0][1]*a[2][0]-a[0][0]*a[2][1])/d,
+        (a[0][0]*a[1][1]-a[0][1]*a[1][0])/d,
+      ],
+    ];
+    return inv;
+  }
+
+  function lerpMat(a, b, t) {
+    return a.map((row, r) => row.map((_, c) => a[r][c] + (b[r][c] - a[r][c]) * t));
+  }
+
+  function getCols(m) {
+    return [
+      [m[0][0], m[1][0], m[2][0]],
+      [m[0][1], m[1][1], m[2][1]],
+      [m[0][2], m[1][2], m[2][2]],
+    ];
+  }
+
+  function norm3(v) { return Math.sqrt(v[0]**2 + v[1]**2 + v[2]**2); }
+
+  function lerpV(a, b, t) {
+    return [a[0]+(b[0]-a[0])*t, a[1]+(b[1]-a[1])*t, a[2]+(b[2]-a[2])*t];
+  }
+
+  function getW() {
+    return [
+      parseFloat(document.getElementById('wx').value) || 0,
+      parseFloat(document.getElementById('wy').value) || 0,
+      parseFloat(document.getElementById('wz').value) || 0,
+    ];
+  }
+
+  function makeArrow(from, to, color, headR = 0.13, dashed = false) {
+    const g = new THREE.Group();
+    const d = [to[0]-from[0], to[1]-from[1], to[2]-from[2]];
+    const len = norm3(d);
+    if (len < 0.02) return g;
+    const mat = new THREE.LineBasicMaterial({
+      color, transparent: true, opacity: dashed ? 0.45 : 0.9
+    });
+    const geo = new THREE.BufferGeometry();
+    geo.setAttribute('position', new THREE.Float32BufferAttribute(
+      [from[0],from[1],from[2], to[0],to[1],to[2]], 3
+    ));
+    g.add(new THREE.Line(geo, mat));
+    if (!dashed) {
+      const nd = d.map(x => x / len);
+      const cone = new THREE.Mesh(
+        new THREE.ConeGeometry(headR, headR*1.8, 8),
+        new THREE.MeshBasicMaterial({ color })
+      );
+      cone.position.set(to[0], to[1], to[2]);
+      cone.quaternion.setFromUnitVectors(new THREE.Vector3(0,1,0), new THREE.Vector3(...nd));
+      cone.position.addScaledVector(new THREE.Vector3(...nd), -headR*0.9);
+      g.add(cone);
+    }
+    return g;
+  }
+
+  function buildParallelepiped(b1, b2, b3, t) {
+    const corners = [
+      [0,0,0],
+      b1, b2, b3,
+      [b1[0]+b2[0], b1[1]+b2[1], b1[2]+b2[2]],
+      [b1[0]+b3[0], b1[1]+b3[1], b1[2]+b3[2]],
+      [b2[0]+b3[0], b2[1]+b3[1], b2[2]+b3[2]],
+      [b1[0]+b2[0]+b3[0], b1[1]+b2[1]+b3[1], b1[2]+b2[2]+b3[2]],
+    ];
+    const edges = [
+      [0,1],[0,2],[0,3],[1,4],[1,5],[2,6],[3,6],
+      [4,7],[5,7],[6,7],[2,4],[3,5],[1,6]
+    ];
+    const pts = [];
+    edges.forEach(([a,b]) => {
+      const ca = lerpV([0,0,0], corners[a], t);
+      const cb = lerpV([0,0,0], corners[b], t);
+      pts.push(...ca, ...cb);
+    });
+    const geo = new THREE.BufferGeometry();
+    geo.setAttribute('position', new THREE.Float32BufferAttribute(pts, 3));
+    return new THREE.LineSegments(geo, new THREE.LineBasicMaterial({
+      color: 0xF472B6, transparent: true, opacity: 0.35
+    }));
+  }
+
+  const dynGroup = new THREE.Group();
+  scene.add(dynGroup);
+
+  function buildStaticGrid() {
+    const pts = [];
+    for (let i = -4; i <= 4; i++) {
+      pts.push(-4,0,i, 4,0,i, i,0,-4, i,0,4);
+    }
+    const geo = new THREE.BufferGeometry();
+    geo.setAttribute('position', new THREE.Float32BufferAttribute(pts, 3));
+    return new THREE.LineSegments(geo, new THREE.LineBasicMaterial({
+      color: 0x1A2A3A, transparent: true, opacity: 0.4
+    }));
+  }
+  scene.add(buildStaticGrid());
+
+  let animT = 0, isPlaying = false, animDir = 1, animRAF = null;
+  let coordsB = [0, 0, 0];
+
+  function readMatrix() {
+    document.querySelectorAll('.m5-cell').forEach(inp => {
+      P[+inp.dataset.r][+inp.dataset.c] = parseFloat(inp.value) || 0;
+    });
+  }
+
+  function writeMatrix(m) {
+    document.querySelectorAll('.m5-cell').forEach(inp => {
+      inp.value = m[+inp.dataset.r][+inp.dataset.c];
+    });
+    P = m.map(r => [...r]);
+  }
+
+  function updatePanel(mCur, w, cB) {
+    const d = det3(mCur);
+    const detEl = document.getElementById('m5-det');
+    detEl.textContent = d.toFixed(2);
+    detEl.className = 'm5-stat-val' + (Math.abs(d) < 0.05 ? ' bad' : Math.abs(d - 1) > 0.5 ? ' warn' : '');
+
+    const validEl = document.getElementById('m5-valid');
+    if (Math.abs(d) < 0.05) {
+      validEl.textContent = 'não — dependente';
+      validEl.className = 'm5-stat-val bad';
+    } else {
+      validEl.textContent = 'sim';
+      validEl.className = 'm5-stat-val';
+    }
+
+    document.getElementById('m5-coord-std').textContent =
+      `( ${w[0].toFixed(2)}, ${w[1].toFixed(2)}, ${w[2].toFixed(2)} )`;
+
+    if (cB) {
+      document.getElementById('m5-coord-b').textContent =
+        `( ${cB[0].toFixed(2)}, ${cB[1].toFixed(2)}, ${cB[2].toFixed(2)} )`;
+      document.getElementById('m5-formula').innerHTML =
+        `w = ${cB[0].toFixed(1)}b₁ + ${cB[1].toFixed(1)}b₂ + ${cB[2].toFixed(1)}b₃`;
+    } else {
+      document.getElementById('m5-coord-b').textContent = '( —, —, — )';
+      document.getElementById('m5-formula').textContent = 'det(P)=0 — base inválida';
+    }
+  }
+
+  function buildScene(t) {
+    while (dynGroup.children.length) dynGroup.remove(dynGroup.children[0]);
+
+    const mInterp = lerpMat(ID, P, t);
+    const cols = getCols(mInterp);
+    const w = getW();
+    const inv = inv3(P);
+    coordsB = inv ? matMul(inv, w) : null;
+
+    const showCanon = document.getElementById('tog-canonical').checked;
+    const showPara = document.getElementById('tog-parallelepiped').checked;
+    const showDecomp = document.getElementById('tog-decomp').checked;
+
+    if (showCanon) {
+      [[1,0,0],[0,1,0],[0,0,1]].forEach((e, i) => {
+        dynGroup.add(makeArrow([0,0,0], e, CANON_COLORS[i], 0.1, true));
+      });
+    }
+
+    cols.forEach((b, i) => {
+      dynGroup.add(makeArrow([0,0,0], b, BASIS_COLORS[i], 0.15));
+    });
+
+    if (showPara) {
+      dynGroup.add(buildParallelepiped(cols[0], cols[1], cols[2], 1));
+    }
+
+    dynGroup.add(makeArrow([0,0,0], w, 0xA78BFA, 0.16));
+
+    if (showDecomp && coordsB) {
+      const c1b1 = [cols[0][0]*coordsB[0], cols[0][1]*coordsB[0], cols[0][2]*coordsB[0]];
+      const c2b2 = [cols[1][0]*coordsB[1], cols[1][1]*coordsB[1], cols[1][2]*coordsB[1]];
+      const c3b3 = [cols[2][0]*coordsB[2], cols[2][1]*coordsB[2], cols[2][2]*coordsB[2]];
+
+      dynGroup.add(makeArrow([0,0,0], c1b1, BASIS_COLORS[0], 0.1, true));
+      dynGroup.add(makeArrow([0,0,0], c2b2, BASIS_COLORS[1], 0.1, true));
+      dynGroup.add(makeArrow([0,0,0], c3b3, BASIS_COLORS[2], 0.1, true));
+
+      const tip1 = c1b1;
+      const tip2 = [tip1[0]+c2b2[0], tip1[1]+c2b2[1], tip1[2]+c2b2[2]];
+      const segMat = new THREE.LineBasicMaterial({ color: 0x4A7FA5, transparent: true, opacity: 0.3 });
+      [[c1b1, tip2], [tip2, w]].forEach(([a,b]) => {
+        const g = new THREE.BufferGeometry();
+        g.setAttribute('position', new THREE.Float32BufferAttribute([...a, ...b], 3));
+        dynGroup.add(new THREE.Line(g, segMat));
+      });
+    }
+
+    updatePanel(mInterp, w, coordsB);
+  }
+
+  function animStep() {
+    animT += 0.012 * animDir;
+    if (animT >= 1) { animT = 1; animDir = -1; }
+    if (animT <= 0) { animT = 0; isPlaying = false; animDir = 1; updateAnimBtn(); }
+    document.getElementById('m5-progress-bar').style.width = (animT * 100) + '%';
+    buildScene(animT);
+    if (isPlaying) animRAF = requestAnimationFrame(animStep);
+  }
+
+  function updateAnimBtn() {
+    const btn = document.getElementById('m5-anim-btn');
+    if (isPlaying) { btn.textContent = '⏸ pausar'; btn.classList.add('playing'); }
+    else { btn.textContent = animT > 0.5 ? '↩ reverter' : '▶ animar mudança de base'; btn.classList.remove('playing'); }
+  }
+
+  document.getElementById('m5-anim-btn').addEventListener('click', () => {
+    if (isPlaying) { isPlaying = false; cancelAnimationFrame(animRAF); updateAnimBtn(); return; }
+    animDir = animT >= 1 ? -1 : 1;
+    isPlaying = true;
+    updateAnimBtn();
+    animRAF = requestAnimationFrame(animStep);
+  });
+
+  function onChange() {
+    readMatrix();
+    if (!isPlaying) buildScene(animT);
+    document.querySelectorAll('.m5-preset-btn').forEach(b => b.classList.remove('active'));
+  }
+
+  document.querySelectorAll('.m5-cell').forEach(inp => inp.addEventListener('input', onChange));
+  ['wx','wy','wz'].forEach(id => document.getElementById(id).addEventListener('input', onChange));
+
+  document.querySelectorAll('.m5-preset-btn').forEach(btn => {
+    btn.addEventListener('click', function() {
+      const p = PRESETS[this.dataset.preset];
+      writeMatrix(p.m);
+      animT = 0; animDir = 1; isPlaying = false;
+      cancelAnimationFrame(animRAF);
+      document.getElementById('m5-progress-bar').style.width = '0%';
+      updateAnimBtn();
+      document.getElementById('m5-insight').textContent = p.insight;
+      document.querySelectorAll('.m5-preset-btn').forEach(b => b.classList.remove('active'));
+      this.classList.add('active');
+      buildScene(0);
+    });
+  });
+
+  ['tog-canonical','tog-parallelepiped','tog-decomp'].forEach(id => {
+    document.getElementById(id).addEventListener('change', () => buildScene(animT));
+  });
+
+  function animate() {
+    requestAnimationFrame(animate);
+    resize();
+    renderer.render(scene, camera);
+  }
+
+  buildScene(0);
+  animate();
+})();
+</script>
+</body>
+</html>

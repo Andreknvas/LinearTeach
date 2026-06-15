@@ -1,0 +1,573 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>M1 — Vetores no Espaço | LinearTeach</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+</head>
+<body>
+
+<h2 class="sr-only">Módulo 1: Vetores no Espaço — ferramenta interativa de álgebra linear para visualização de vetores em R³</h2>
+
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  html, body {
+    height: 100%;
+    overflow: hidden;
+    background: #0A0A0F;
+  }
+
+  .sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+  }
+
+  #alv-root {
+    font-family: 'Space Grotesk', sans-serif;
+    background: #0A0A0F;
+    color: #E8EDF2;
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+    width: 100vw;
+    overflow: hidden;
+  }
+
+  #alv-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 16px;
+    background: #0F0F1A;
+    border-bottom: 0.5px solid #1E3A5F;
+    flex-shrink: 0;
+  }
+
+  .alv-module-badge {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    background: #7C3AED22;
+    border: 0.5px solid #7C3AED66;
+    color: #A78BFA;
+    padding: 3px 8px;
+    border-radius: 4px;
+    letter-spacing: 0.05em;
+  }
+
+  #alv-header h1 {
+    font-size: 14px;
+    font-weight: 500;
+    color: #E8EDF2;
+    flex: 1;
+  }
+
+  .lt-header-nav {
+    display: flex;
+    gap: 8px;
+    flex-shrink: 0;
+  }
+
+  .lt-nav-link {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    color: #4A7FA5;
+    text-decoration: none;
+    padding: 4px 8px;
+    border: 0.5px solid #1E3A5F;
+    border-radius: 4px;
+    transition: color 0.15s, border-color 0.15s;
+    white-space: nowrap;
+  }
+
+  .lt-nav-link:hover { color: #A78BFA; border-color: #7C3AED55; }
+
+  #alv-body {
+    display: flex;
+    flex: 1;
+    min-height: 0;
+  }
+
+  #alv-canvas-wrap {
+    flex: 1;
+    position: relative;
+    min-width: 0;
+  }
+
+  #alv-canvas {
+    width: 100%;
+    height: 100%;
+    display: block;
+  }
+
+  #alv-panel {
+    width: 220px;
+    flex-shrink: 0;
+    background: #0F0F1A;
+    border-left: 0.5px solid #1E3A5F;
+    display: flex;
+    flex-direction: column;
+    overflow-y: auto;
+  }
+
+  .alv-section {
+    padding: 12px 14px;
+    border-bottom: 0.5px solid #1E2A3A;
+  }
+
+  .alv-section-title {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    color: #4A7FA5;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    margin-bottom: 10px;
+  }
+
+  .alv-vec-row {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-bottom: 8px;
+  }
+
+  .alv-vec-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+
+  .alv-vec-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    color: #A8B8C8;
+    width: 16px;
+    flex-shrink: 0;
+  }
+
+  .alv-coord-inputs {
+    display: flex;
+    gap: 4px;
+    flex: 1;
+  }
+
+  .alv-coord-input {
+    width: 100%;
+    background: #0A0A0F;
+    border: 0.5px solid #1E3A5F;
+    color: #E8EDF2;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    padding: 4px 6px;
+    border-radius: 4px;
+    text-align: center;
+    min-width: 0;
+  }
+
+  .alv-coord-input:focus {
+    outline: none;
+    border-color: #7C3AED;
+  }
+
+  .alv-insight {
+    margin: 10px 14px;
+    padding: 10px 12px;
+    background: #7C3AED15;
+    border-left: 2px solid #7C3AED;
+    border-radius: 0 6px 6px 0;
+  }
+
+  .alv-insight-label {
+    font-size: 10px;
+    font-weight: 500;
+    color: #A78BFA;
+    letter-spacing: 0.05em;
+    margin-bottom: 4px;
+  }
+
+  .alv-insight p {
+    font-size: 12px;
+    color: #8A9AB0;
+    line-height: 1.5;
+  }
+
+  .alv-stat {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    margin-bottom: 6px;
+  }
+
+  .alv-stat-label {
+    font-size: 11px;
+    color: #4A7FA5;
+  }
+
+  .alv-stat-val {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    color: #E8EDF2;
+  }
+
+  .alv-btn {
+    width: 100%;
+    background: transparent;
+    border: 0.5px solid #1E3A5F;
+    color: #8A9AB0;
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 11px;
+    padding: 6px 10px;
+    border-radius: 6px;
+    cursor: pointer;
+    margin-bottom: 6px;
+    text-align: left;
+    transition: background 0.15s, border-color 0.15s;
+  }
+
+  .alv-btn:hover { background: #1E3A5F33; border-color: #2A5A8A; color: #C8D8E8; }
+
+  .alv-btn-accent {
+    border-color: #7C3AED55;
+    color: #A78BFA;
+  }
+  .alv-btn-accent:hover { background: #7C3AED22; border-color: #7C3AED; }
+
+  .alv-hint {
+    font-size: 10px;
+    color: #2A4A6A;
+    text-align: center;
+    padding: 8px;
+    flex-shrink: 0;
+  }
+
+  #alv-op-result {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    color: #34D399;
+    padding: 6px 10px;
+    background: #34D39912;
+    border-radius: 4px;
+    border: 0.5px solid #34D39930;
+    display: none;
+  }
+</style>
+
+<div id="alv-root">
+  <div id="alv-header">
+    <span class="alv-module-badge">M1</span>
+    <h1>Vetores no Espaço</h1>
+    <nav class="lt-header-nav">
+      <a class="lt-nav-link" href="index.html">← início</a>
+    </nav>
+  </div>
+  <div id="alv-body">
+    <div id="alv-canvas-wrap">
+      <canvas id="alv-canvas"></canvas>
+    </div>
+    <div id="alv-panel">
+      <div class="alv-section">
+        <div class="alv-section-title">Vetores</div>
+        <div class="alv-vec-row">
+          <div class="alv-vec-dot" style="background:#F5A623"></div>
+          <span class="alv-vec-label">u</span>
+          <div class="alv-coord-inputs">
+            <input class="alv-coord-input" id="ux" type="number" value="2" step="0.5">
+            <input class="alv-coord-input" id="uy" type="number" value="1" step="0.5">
+            <input class="alv-coord-input" id="uz" type="number" value="1" step="0.5">
+          </div>
+        </div>
+        <div class="alv-vec-row">
+          <div class="alv-vec-dot" style="background:#38BDF8"></div>
+          <span class="alv-vec-label">v</span>
+          <div class="alv-coord-inputs">
+            <input class="alv-coord-input" id="vx" type="number" value="0" step="0.5">
+            <input class="alv-coord-input" id="vy" type="number" value="2" step="0.5">
+            <input class="alv-coord-input" id="vz" type="number" value="-1" step="0.5">
+          </div>
+        </div>
+      </div>
+
+      <div class="alv-section">
+        <div class="alv-section-title">Propriedades</div>
+        <div class="alv-stat"><span class="alv-stat-label">‖u‖</span><span class="alv-stat-val" id="norm-u">—</span></div>
+        <div class="alv-stat"><span class="alv-stat-label">‖v‖</span><span class="alv-stat-val" id="norm-v">—</span></div>
+        <div class="alv-stat"><span class="alv-stat-label">u · v</span><span class="alv-stat-val" id="dot-uv">—</span></div>
+        <div class="alv-stat"><span class="alv-stat-label">ângulo</span><span class="alv-stat-val" id="angle-uv">—</span></div>
+      </div>
+
+      <div class="alv-section">
+        <div class="alv-section-title">Operações</div>
+        <button class="alv-btn alv-btn-accent" id="btn-sum">Mostrar u + v</button>
+        <button class="alv-btn alv-btn-accent" id="btn-cross">Mostrar u × v</button>
+        <button class="alv-btn" id="btn-clear">Limpar</button>
+        <div id="alv-op-result"></div>
+      </div>
+
+      <div class="alv-section">
+        <div class="alv-section-title">Escala de u</div>
+        <div style="display:flex;align-items:center;gap:8px">
+          <input type="range" id="scalar" min="-3" max="3" step="0.1" value="1" style="flex:1">
+          <span style="font-family:'JetBrains Mono',monospace;font-size:12px;color:#F5A623;min-width:28px" id="scalar-val">1.0</span>
+        </div>
+      </div>
+
+      <div class="alv-insight">
+        <div class="alv-insight-label">💡 insight</div>
+        <p id="insight-text">Arraste a cena para orbitar. Edite as coordenadas e observe como o vetor muda no espaço.</p>
+      </div>
+
+      <div class="alv-hint">arraste para orbitar · scroll para zoom</div>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script>
+(function() {
+  const canvas = document.getElementById('alv-canvas');
+  const wrap = document.getElementById('alv-canvas-wrap');
+
+  const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true });
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+  renderer.setClearColor(0x0A0A0F, 1);
+
+  const scene = new THREE.Scene();
+  const camera = new THREE.PerspectiveCamera(45, 1, 0.1, 100);
+  camera.position.set(6, 5, 7);
+  camera.lookAt(0, 0, 0);
+
+  function resize() {
+    const w = wrap.clientWidth, h = wrap.clientHeight;
+    renderer.setSize(w, h, false);
+    camera.aspect = w / h;
+    camera.updateProjectionMatrix();
+  }
+  resize();
+
+  // Orbit controls (manual)
+  let isDragging = false, lastX = 0, lastY = 0;
+  let spherical = { theta: 0.8, phi: 0.9, r: 10 };
+
+  function updateCamera() {
+    camera.position.set(
+      spherical.r * Math.sin(spherical.phi) * Math.sin(spherical.theta),
+      spherical.r * Math.cos(spherical.phi),
+      spherical.r * Math.sin(spherical.phi) * Math.cos(spherical.theta)
+    );
+    camera.lookAt(0, 0, 0);
+  }
+  updateCamera();
+
+  canvas.addEventListener('mousedown', e => { isDragging = true; lastX = e.clientX; lastY = e.clientY; });
+  window.addEventListener('mouseup', () => isDragging = false);
+  window.addEventListener('mousemove', e => {
+    if (!isDragging) return;
+    const dx = e.clientX - lastX, dy = e.clientY - lastY;
+    spherical.theta -= dx * 0.008;
+    spherical.phi = Math.max(0.1, Math.min(Math.PI - 0.1, spherical.phi + dy * 0.008));
+    lastX = e.clientX; lastY = e.clientY;
+    updateCamera();
+  });
+  canvas.addEventListener('wheel', e => {
+    spherical.r = Math.max(3, Math.min(20, spherical.r + e.deltaY * 0.01));
+    updateCamera();
+    e.preventDefault();
+  }, { passive: false });
+
+  // Touch support
+  let lastTouch = null;
+  canvas.addEventListener('touchstart', e => { lastTouch = e.touches[0]; e.preventDefault(); }, { passive: false });
+  canvas.addEventListener('touchmove', e => {
+    if (!lastTouch) return;
+    const t = e.touches[0];
+    const dx = t.clientX - lastTouch.clientX, dy = t.clientY - lastTouch.clientY;
+    spherical.theta -= dx * 0.008;
+    spherical.phi = Math.max(0.1, Math.min(Math.PI - 0.1, spherical.phi + dy * 0.008));
+    lastTouch = t;
+    updateCamera();
+    e.preventDefault();
+  }, { passive: false });
+
+  // Grid
+  function makeGrid() {
+    const mat = new THREE.LineBasicMaterial({ color: 0x1E3A5F, transparent: true, opacity: 0.6 });
+    const geo = new THREE.BufferGeometry();
+    const pts = [];
+    for (let i = -5; i <= 5; i++) {
+      pts.push(-5, 0, i, 5, 0, i);
+      pts.push(i, 0, -5, i, 0, 5);
+    }
+    geo.setAttribute('position', new THREE.Float32BufferAttribute(pts, 3));
+    return new THREE.LineSegments(geo, mat);
+  }
+  scene.add(makeGrid());
+
+  // Axes
+  function makeAxis(dir, color) {
+    const mat = new THREE.LineBasicMaterial({ color, transparent: true, opacity: 0.7 });
+    const pts = [0, 0, 0, dir[0]*4.5, dir[1]*4.5, dir[2]*4.5];
+    const geo = new THREE.BufferGeometry();
+    geo.setAttribute('position', new THREE.Float32BufferAttribute(pts, 3));
+    return new THREE.Line(geo, mat);
+  }
+  scene.add(makeAxis([1,0,0], 0xEF4444));
+  scene.add(makeAxis([0,1,0], 0x22C55E));
+  scene.add(makeAxis([0,0,1], 0x3B82F6));
+
+  // Arrow helper
+  function makeArrow(from, to, color, headSize = 0.18) {
+    const group = new THREE.Group();
+    const dir = new THREE.Vector3(to[0]-from[0], to[1]-from[1], to[2]-from[2]);
+    const len = dir.length();
+    if (len < 0.01) return group;
+
+    const mat = new THREE.LineBasicMaterial({ color });
+    const geo = new THREE.BufferGeometry();
+    geo.setAttribute('position', new THREE.Float32BufferAttribute([from[0],from[1],from[2],to[0],to[1],to[2]], 3));
+    group.add(new THREE.Line(geo, mat));
+
+    const normDir = dir.clone().normalize();
+    const coneGeo = new THREE.ConeGeometry(headSize * 0.5, headSize, 8);
+    const coneMat = new THREE.MeshBasicMaterial({ color });
+    const cone = new THREE.Mesh(coneGeo, coneMat);
+    cone.position.set(to[0], to[1], to[2]);
+    const up = new THREE.Vector3(0, 1, 0);
+    cone.quaternion.setFromUnitVectors(up, normDir);
+    cone.position.addScaledVector(normDir, -headSize / 2);
+    group.add(cone);
+    return group;
+  }
+
+  let vecU = null, vecV = null, vecExtra = null, scalarVecU = null;
+  let scalarFactor = 1;
+
+  function getVals(ids) {
+    return ids.map(id => parseFloat(document.getElementById(id).value) || 0);
+  }
+
+  function norm(v) { return Math.sqrt(v[0]**2 + v[1]**2 + v[2]**2); }
+  function dot(a, b) { return a[0]*b[0] + a[1]*b[1] + a[2]*b[2]; }
+  function cross(a, b) {
+    return [a[1]*b[2]-a[2]*b[1], a[2]*b[0]-a[0]*b[2], a[0]*b[1]-a[1]*b[0]];
+  }
+
+  function updateStats(u, v) {
+    const nu = norm(u), nv = norm(v);
+    document.getElementById('norm-u').textContent = nu.toFixed(2);
+    document.getElementById('norm-v').textContent = nv.toFixed(2);
+    const d = dot(u, v);
+    document.getElementById('dot-uv').textContent = d.toFixed(2);
+    const angle = nu > 0 && nv > 0 ? Math.acos(Math.max(-1, Math.min(1, d/(nu*nv)))) * 180/Math.PI : 0;
+    document.getElementById('angle-uv').textContent = angle.toFixed(1) + '°';
+
+    let insight = 'Arraste a cena para orbitar. Edite as coordenadas e observe como o vetor muda no espaço.';
+    if (Math.abs(d) < 0.01 && nu > 0 && nv > 0) insight = 'u e v são perpendiculares! O produto escalar é zero quando os vetores formam 90°.';
+    else if (angle < 5) insight = 'u e v apontam na mesma direção — são linearmente dependentes neste caso.';
+    else if (angle > 175) insight = 'u e v apontam em direções opostas.';
+    else if (Math.abs(scalarFactor) > 1.5) insight = 'Multiplicar por escalar > 1 estica o vetor. Negativo inverte a direção.';
+    else if (Math.abs(scalarFactor) < 0.6 && Math.abs(scalarFactor) > 0.01) insight = 'Multiplicar por escalar < 1 encolhe o vetor, mantendo a direção.';
+    document.getElementById('insight-text').textContent = insight;
+  }
+
+  function redraw() {
+    if (vecU) scene.remove(vecU);
+    if (vecV) scene.remove(vecV);
+    if (scalarVecU) scene.remove(scalarVecU);
+
+    const u = getVals(['ux','uy','uz']);
+    const v = getVals(['vx','vy','vz']);
+    const su = [u[0]*scalarFactor, u[1]*scalarFactor, u[2]*scalarFactor];
+
+    vecU = makeArrow([0,0,0], u, 0xF5A623);
+    vecV = makeArrow([0,0,0], v, 0x38BDF8);
+    scene.add(vecU);
+    scene.add(vecV);
+
+    if (Math.abs(scalarFactor - 1) > 0.05) {
+      scalarVecU = makeArrow([0,0,0], su, 0xFDE68A);
+      scene.add(scalarVecU);
+    }
+
+    updateStats(u, v);
+  }
+
+  ['ux','uy','uz','vx','vy','vz'].forEach(id => {
+    document.getElementById(id).addEventListener('input', redraw);
+  });
+
+  document.getElementById('scalar').addEventListener('input', function() {
+    scalarFactor = parseFloat(this.value);
+    document.getElementById('scalar-val').textContent = scalarFactor.toFixed(1);
+    redraw();
+  });
+
+  document.getElementById('btn-sum').addEventListener('click', function() {
+    if (vecExtra) { scene.remove(vecExtra); vecExtra = null; }
+    const u = getVals(['ux','uy','uz']);
+    const v = getVals(['vx','vy','vz']);
+    const s = [u[0]+v[0], u[1]+v[1], u[2]+v[2]];
+
+    // parallelogram
+    const matD = new THREE.LineBasicMaterial({ color: 0x34D399, transparent: true, opacity: 0.35 });
+    const paraGeo = new THREE.BufferGeometry();
+    paraGeo.setAttribute('position', new THREE.Float32BufferAttribute([
+      u[0],u[1],u[2], s[0],s[1],s[2],
+      v[0],v[1],v[2], s[0],s[1],s[2]
+    ], 3));
+    const para = new THREE.LineSegments(paraGeo, matD);
+
+    vecExtra = new THREE.Group();
+    vecExtra.add(para);
+    vecExtra.add(makeArrow([0,0,0], s, 0x34D399));
+    scene.add(vecExtra);
+
+    const res = document.getElementById('alv-op-result');
+    res.style.display = 'block';
+    res.textContent = `u+v = (${s[0].toFixed(1)}, ${s[1].toFixed(1)}, ${s[2].toFixed(1)})`;
+    document.getElementById('insight-text').textContent = 'A diagonal do paralelogramo formado por u e v é exatamente u+v. A soma de vetores é geométrica!';
+  });
+
+  document.getElementById('btn-cross').addEventListener('click', function() {
+    if (vecExtra) { scene.remove(vecExtra); vecExtra = null; }
+    const u = getVals(['ux','uy','uz']);
+    const v = getVals(['vx','vy','vz']);
+    const c = cross(u, v);
+
+    vecExtra = makeArrow([0,0,0], c, 0xF472B6);
+    scene.add(vecExtra);
+
+    const res = document.getElementById('alv-op-result');
+    res.style.display = 'block';
+    res.textContent = `u×v = (${c[0].toFixed(1)}, ${c[1].toFixed(1)}, ${c[2].toFixed(1)})`;
+    document.getElementById('insight-text').textContent = 'O produto vetorial u×v é perpendicular ao plano formado por u e v. Sua magnitude é a área do paralelogramo.';
+  });
+
+  document.getElementById('btn-clear').addEventListener('click', function() {
+    if (vecExtra) { scene.remove(vecExtra); vecExtra = null; }
+    document.getElementById('alv-op-result').style.display = 'none';
+    redraw();
+  });
+
+  redraw();
+
+  function animate() {
+    requestAnimationFrame(animate);
+    resize();
+    renderer.render(scene, camera);
+  }
+  animate();
+})();
+</script>
+</body>
+</html>
